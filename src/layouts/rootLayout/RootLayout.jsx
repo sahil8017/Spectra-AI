@@ -5,7 +5,7 @@ import { dark } from "@clerk/themes";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-const AppShell = () => {
+const AppShell = ({ hasClerk }) => {
   return (
     <div className="rootLayout">
       <header>
@@ -14,9 +14,11 @@ const AppShell = () => {
           <span>YouLearn</span>
         </Link>
         <div className="user">
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          {hasClerk ? (
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+          ) : null}
         </div>
       </header>
       <main>
@@ -38,12 +40,12 @@ const RootLayout = () => {
         routerReplace={(to) => navigate(to, { replace: true })}
         appearance={{ baseTheme: dark }}
       >
-        <AppShell />
+        <AppShell hasClerk />
       </ClerkProvider>
     );
   }
 
-  return <AppShell />;
+  return <AppShell hasClerk={false} />;
 };
 
 export default RootLayout;
