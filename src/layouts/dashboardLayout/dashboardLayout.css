@@ -134,7 +134,7 @@
 }
 
 .dark-mode .nav-link.active {
-  background: rgba(59, 130, 246, .15);
+  background: rgb(0, 0, 0);
   border-color: black;
 }
 
