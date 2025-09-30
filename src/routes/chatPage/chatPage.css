@@ -1,0 +1,18 @@
+.chat-view { height: 100%; display: flex; flex-direction: column; gap: 12px; }
+.chat-header { display: flex; flex-direction: column; gap: 8px; }
+.chat-title { font-size: 18px; font-weight: 700; color: #0f172a; }
+.chat-tabs { display: flex; gap: 8px; }
+.tab-btn { padding: 8px 12px; border-radius: 999px; border: 1px solid #e5e7eb; background: #ffffff; color: #0f172a; cursor: pointer; font-size: 13px; }
+.tab-btn.active { background: #eaf1ff; border-color: #cfe0ff; color: #3b82f6; }
+
+.messages-area { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 8px 2px; }
+.message { max-width: 70%; padding: 12px 14px; border-radius: 14px; line-height: 1.4; font-size: 14px; }
+.message.ai { align-self: flex-start; background: #f6f7fb; color: #0f172a; }
+.message.user { align-self: flex-end; background: #eaf1ff; color: #0f172a; }
+
+.chat-input { position: sticky; bottom: 0; display: flex; gap: 8px; padding-top: 6px; background: linear-gradient(to top, #ffffff, rgba(255,255,255,0)); }
+.chat-field { flex: 1; padding: 14px 48px 14px 14px; border: 1px solid #e5e7eb; background: #ffffff; border-radius: 12px; outline: none; }
+.chat-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+.send-btn { width: 40px; height: 40px; margin-left: -48px; align-self: center; border-radius: 10px; border: 1px solid #e5e7eb; background: #f6f7fb; color: #0f172a; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.send-btn:hover { background: #eaf1ff; border-color: #cfe0ff; color: #3b82f6; }
+.send-icon { width: 18px; height: 18px; }

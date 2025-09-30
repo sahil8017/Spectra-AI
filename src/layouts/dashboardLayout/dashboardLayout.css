@@ -1,0 +1,40 @@
+:root { --accent: #3b82f6; --border: #e5e7eb; --bg: #ffffff; --bg-muted: #f6f7fb; --text: #0f172a; --muted: #64748b; }
+
+.dashboard-shell { display: grid; grid-template-columns: 260px 1fr; height: 100vh; background: var(--bg-muted); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+
+.sidebar { position: relative; height: 100vh; background: var(--bg); border-right: 1px solid var(--border); padding: 16px 12px; display: flex; flex-direction: column; gap: 12px; transition: width 250ms ease, grid-template-columns 250ms ease; width: 260px; }
+.sidebar.collapsed { width: 80px; }
+
+/* Keep grid in sync with sidebar width */
+.dashboard-shell .sidebar.expanded ~ .main-area { }
+
+.sidebar-header { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; }
+.brand-label { font-weight: 700; color: var(--text); transition: opacity 200ms ease; }
+
+.toggle-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; transition: background 200ms ease, color 200ms ease; }
+.toggle-btn:hover { background: var(--bg-muted); color: var(--accent); }
+
+.icon { width: 18px; height: 18px; }
+
+.section-title { margin: 6px 8px 2px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+.nav-section ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.nav-link { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; border: 1px solid transparent; background: transparent; color: var(--text); cursor: pointer; text-align: left; transition: background 200ms ease, border-color 200ms ease, color 200ms ease; }
+.nav-link:hover { background: var(--bg-muted); border-color: var(--border); }
+
+/* Collapse behavior: hide texts, titles, and footer */
+.sidebar.collapsed .brand-label,
+.sidebar.collapsed .section-title,
+.sidebar.collapsed .nav-link span,
+.sidebar.collapsed .sidebar-footer { display: none; }
+
+.sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding: 12px 8px 4px; display: flex; flex-direction: column; gap: 4px; }
+.user-name { font-weight: 600; color: var(--text); }
+.user-plan { font-size: 12px; color: var(--muted); }
+
+.main-area { height: 100vh; overflow: hidden; padding: 2rem; }
+
+/* Smooth page content */
+.main-area > * { height: 100%; background: transparent; }
+
+/* Adjust shell columns when collapsed via JS using inline width; grid stays auto-fit due to fixed sidebar width. */
