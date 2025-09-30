@@ -1,192 +1,236 @@
-import {
-  useEffect,
-  useMemo,
-  useState
+:root {
+  --accent: #3b82f6;
+  --border: #e5e7eb;
+  --bg: #ffffff;
+  --bg-muted: #f6f7fb;
+  --text: #0f172a;
+  --muted: #64748b;
+  --card-bg: #ffffff;
+  --shadow: 0 8px 24px rgba(0, 0, 0, .06);
+  --chip-bg: #e8f7ee;
+  --chip-text: #065f46;
 }
 
-from "react";
-
-import {
-  Outlet,
-  useLocation,
-  useNavigate
+.dark-mode {
+  --border: #2b2f36;
+  --bg: #0f172a;
+  --bg-muted: #0b1320;
+  --text: #f3f4f6;
+  --muted: #9aa4b2;
+  --card-bg: #111827;
+  --shadow: 0 8px 24px rgba(0, 0, 0, .45);
+  --chip-bg: #064e3b;
+  --chip-text: #d1fae5;
 }
 
-from "react-router-dom";
-import "./dashboardLayout.css";
-import mockChats from "../../data/mockChats";
-
-const Icon=( {
-    name
-  }
-
-)=> {
-  switch (name) {
-    case "hamburger":
-      return (<svg viewBox="0 0 24 24"className="icon"><path d="M3 6h18M3 12h18M3 18h18"stroke="currentColor"strokeWidth="2"fill="none"strokeLinecap="round"/></svg>);
-    case "search":
-      return (<svg viewBox="0 0 24 24"className="icon"><circle cx="11"cy="11"r="7"stroke="currentColor"strokeWidth="2"fill="none"/><path d="M21 21l-4.3-4.3"stroke="currentColor"strokeWidth="2"fill="none"strokeLinecap="round"/></svg>);
-    case "history":
-      return (<svg viewBox="0 0 24 24"className="icon"><path d="M3 12a9 9 0 1 0 3-6.708"stroke="currentColor"strokeWidth="2"fill="none"/><path d="M3 3v6h6"stroke="currentColor"strokeWidth="2"fill="none"strokeLinecap="round"/></svg>);
-    case "chat":
-      return (<svg viewBox="0 0 24 24"className="icon"><path d="M4 5h16v10H8l-4 4z"stroke="currentColor"strokeWidth="2"fill="none"/></svg>);
-    case "gear":
-      return (<svg viewBox="0 0 24 24"className="icon"><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"stroke="currentColor"strokeWidth="2"fill="none"/><path d="M2 12h3M19 12h3M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"stroke="currentColor"strokeWidth="2"fill="none"/></svg>);
-    default:
-      return null;
-  }
+.dashboard-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100vh;
+  background: var(--bg-muted);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  transition: grid-template-columns 250ms ease, background 200ms ease;
 }
 
-;
-
-const Sidebar=( {
-    expanded, onToggle
-  }
-
-)=> {
-  const [menuOpen,
-  setMenuOpen]=useState(false);
-  const [darkMode,
-  setDarkMode]=useState(false);
-  const navigate=useNavigate();
-
-  const {
-    pathname
-  }
-
-  =useLocation();
-
-  const recentChats=mockChats;
-
-  const activeChatId=useMemo(()=> {
-      const parts=pathname.split("/");
-      return parts[1]==="chat"? decodeURIComponent(parts[2] || "") : "";
-    }
-
-    , [pathname]);
-
-  useEffect(()=> {
-      const saved=localStorage.getItem("theme");
-
-      if (saved==="dark") {
-        setDarkMode(true);
-        document.documentElement.classList.add("dark-mode");
-      }
-    }
-
-    , []);
-
-  useEffect(()=> {
-      document.documentElement.classList.toggle("dark-mode", darkMode);
-      localStorage.setItem("theme", darkMode ? "dark" : "light");
-    }
-
-    , [darkMode]);
-
-  return (<aside className= {
-      `sidebar $ {
-        expanded ? "expanded" : "collapsed"
-      }
-
-      `
-    }
-
-    > <div className="sidebar-header"> <button className="toggle-btn"onClick= {
-      onToggle
-    }
-
-    aria-label="Toggle sidebar"> <Icon name="hamburger"/> </button> <span className="brand-label">YouLearn</span> </div> <nav className="nav-section"> <ul> <li> <button className="nav-link"onClick= {
-      ()=> navigate("/dashboard")
-    }
-
-    > <Icon name="search"/> <span>Search</span> </button> </li> <li> <button className="nav-link"onClick= {
-      ()=> navigate("/chat/history")
-    }
-
-    > <Icon name="history"/> <span>History</span> </button> </li> </ul> </nav> <div className="section-title">Recent Chats</div> <nav className="nav-section"> <ul> {
-      recentChats.map((c)=> (<li key= {
-            c.id
-          }
-
-          > <button className= {
-            `nav-link $ {
-              activeChatId===c.id ? "active" : ""
-            }
-
-            `
-          }
-
-          onClick= {
-            ()=> navigate(`/chat/$ {
-                encodeURIComponent(c.id)
-              }
-
-              `)
-          }
-
-          > <Icon name="chat"/> <span> {
-            c.title
-          }
-
-          </span> </button> </li>))
-    }
-
-    </ul> </nav> <div className="section-title">Help & Tools</div> <nav className="nav-section"> <ul> <li><button className="nav-link"onClick= {
-      ()=> navigate("/chat/feedback")
-    }
-
-    ><Icon name="chat"/><span>Feedback</span></button></li> <li><button className="nav-link"onClick= {
-      ()=> navigate("/chat/guide")
-    }
-
-    ><Icon name="chat"/><span>Quick Guide</span></button></li> </ul> </nav> <div className="sidebar-footer"> <button className="user-settings"onClick= {
-      ()=> setMenuOpen((v)=> !v)
-    }
-
-    > <span className="avatar"aria-hidden="true">SG</span> <span className="user-label">SAHIL GUPTA</span> </button> {
-      menuOpen && (<div className="settings-menu"role="menu"> <button className="menu-item"onClick= {
-          ()=> navigate("/dashboard")
-        }
-
-        > <Icon name="gear"/> <span>Settings</span> </button> <label className="menu-item toggle"> <input type="checkbox"checked= {
-          darkMode
-        }
-
-        onChange= {
-          (e)=>setDarkMode(e.target.checked)
-        }
-
-        /> <span>Dark mode</span> </label> </div>)
-    }
-
-    </div> </aside>);
+.dashboard-shell.collapsed {
+  grid-template-columns: 80px 1fr;
 }
 
-;
-
-const DashboardLayout=()=> {
-  const [expanded,
-  setExpanded]=useState(false);
-
-  return (<div className= {
-      `dashboard-shell $ {
-        expanded ? "expanded" : "collapsed"
-      }
-
-      `
-    }
-
-    > <Sidebar expanded= {
-      expanded
-    }
-
-    onToggle= {
-      ()=> setExpanded((v)=> !v)
-    }
-
-    /> <div className="main-area"> <Outlet /> </div> </div>);
+.sidebar {
+  position: relative;
+  height: 100vh;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: width 250ms ease, background 200ms ease, border-color 200ms ease;
+  width: 260px;
 }
 
-;
+.sidebar.collapsed {
+  width: 80px;
+}
 
-export default DashboardLayout;
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.brand-label {
+  font-weight: 700;
+  color: var(--text);
+  transition: opacity 200ms ease;
+}
+
+.toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.toggle-btn:hover {
+  background: var(--bg-muted);
+  color: var(--accent);
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+.section-title {
+  margin: 6px 8px 2px;
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.nav-section ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.nav-link:hover {
+  background: var(--bg-muted);
+  border-color: var(--border);
+}
+
+.nav-link.active {
+  background: #eaf1ff;
+  border-color: #cfe0ff;
+  color: #3b82f6;
+}
+
+.dark-mode .nav-link.active {
+  background: rgba(59, 130, 246, .15);
+  border-color: #1f3a8a;
+}
+
+.sidebar.collapsed .brand-label,
+.sidebar.collapsed .section-title,
+.sidebar.collapsed .nav-link span,
+.sidebar.collapsed .sidebar-footer {
+  display: none;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding: 12px 8px;
+  position: relative;
+}
+
+.user-settings {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.user-settings:hover {
+  background: var(--bg-muted);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #3b82f6;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.user-label {
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+.settings-menu {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 60px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: var(--bg-muted);
+  border-color: var(--border);
+}
+
+.menu-item.toggle {
+  justify-content: space-between;
+}
+
+.main-area {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+.main-area>* {
+  height: 100%;
+  background: transparent;
+}
