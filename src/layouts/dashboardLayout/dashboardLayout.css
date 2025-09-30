@@ -135,7 +135,7 @@
 
 .dark-mode .nav-link.active {
   background: rgba(59, 130, 246, .15);
-  border-color: #1f3a8a;
+  border-color: black;
 }
 
 .sidebar.collapsed .brand-label,
