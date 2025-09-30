@@ -13,33 +13,38 @@
 
 /* Find this rule in your rootLayout.css file */
 .rootLayout header {
-  /* --- Add these properties --- */
   position: sticky;
   top: 0;
   z-index: 10;
-
-  /* --- Your existing properties --- */
   display: flex;
   justify-content: space-between;
-  align-items: left;
-  padding: 16px 20px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg, #ffffff);
+  border-bottom: 1px solid var(--border, #e5e7eb);
 }
 
 .rootLayout header .logo {
   display: flex;
   align-items: center;
-  font-size: 24px;
-  font-weight: bold;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .rootLayout header .logo img {
-  background-color: #f7f8fa; /* Match the page background */
-  border-radius: 12px;
-  width: 48px;
-  height: 48px;
+  background-color: #f7f8fa;
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
-  margin-right: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.dark-mode .rootLayout header {
+  background: var(--bg, #0f172a);
+  border-bottom-color: var(--border, #2b2f36);
+  color: var(--text, #f3f4f6);
 }
 
 
