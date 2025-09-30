@@ -4,7 +4,6 @@ import "./index.css";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Homepage from "./routes/homepage/Homepage";
 import DashboardPage from "./routes/dashboardPage/DashboardPage";
 import ChatPage from "./routes/chatPage/chatPage";
 import RootLayout from "./layouts/rootLayout/RootLayout";
