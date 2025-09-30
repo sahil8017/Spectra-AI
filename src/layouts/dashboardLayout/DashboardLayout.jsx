@@ -19,18 +19,15 @@ const Icon = ({ name }) => {
   }
 };
 
-const Sidebar = () => {
-  const [expanded, setExpanded] = useState(true);
+import mockChats from "../../data/mockChats";
+
+const Sidebar = ({ expanded, onToggle }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const recentChats = useMemo(() => [
-    { id: "intro-to-algebra", title: "Intro to Algebra" },
-    { id: "photosynthesis-basics", title: "Photosynthesis Basics" },
-    { id: "quantum-overview", title: "Quantum Overview" },
-  ], []);
+  const recentChats = mockChats;
 
   const activeChatId = useMemo(() => {
     const parts = pathname.split("/");
@@ -38,13 +35,22 @@ const Sidebar = () => {
   }, [pathname]);
 
   useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+      setDarkMode(true);
+      document.documentElement.classList.add("dark-mode");
+    }
+  }, []);
+
+  useEffect(() => {
     document.documentElement.classList.toggle("dark-mode", darkMode);
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
   return (
     <aside className={`sidebar ${expanded ? "expanded" : "collapsed"}`}>
       <div className="sidebar-header">
-        <button className="toggle-btn" onClick={() => setExpanded((v) => !v)} aria-label="Toggle sidebar">
+        <button className="toggle-btn" onClick={onToggle} aria-label="Toggle sidebar">
           <Icon name="hamburger" />
         </button>
         <span className="brand-label">YouLearn</span>
@@ -112,11 +118,12 @@ const Sidebar = () => {
 };
 
 const DashboardLayout = () => {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   return (
     <div className={`dashboard-shell ${expanded ? "expanded" : "collapsed"}`}>
-      <Sidebar />
+      <Sidebar expanded={expanded} onToggle={() => setExpanded((v)=>!v)} />
       <div className="main-area">
+        <button className="upgrade-chip" type="button">Upgrade</button>
         <Outlet />
       </div>
     </div>
