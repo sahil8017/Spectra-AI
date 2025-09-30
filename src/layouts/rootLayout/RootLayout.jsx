@@ -1,21 +1,34 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, Link } from "react-router-dom";
 import "./rootLayout.css";
-import { ClerkProvider } from "@clerk/clerk-react";
+import { ClerkProvider, SignedIn, UserButton } from "@clerk/clerk-react";
 import { dark } from "@clerk/themes";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-const RootLayout = () => {
-  const navigate = useNavigate();
-  const hasClerk = Boolean(PUBLISHABLE_KEY);
-
-  const content = (
+const AppShell = () => {
+  return (
     <div className="rootLayout">
+      <header>
+        <Link to="/" className="logo">
+          <img src="/logo.png" alt="logo" />
+          <span>YouLearn</span>
+        </Link>
+        <div className="user">
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+        </div>
+      </header>
       <main>
         <Outlet />
       </main>
     </div>
   );
+};
+
+const RootLayout = () => {
+  const navigate = useNavigate();
+  const hasClerk = Boolean(PUBLISHABLE_KEY);
 
   if (hasClerk) {
     return (
@@ -25,12 +38,12 @@ const RootLayout = () => {
         routerReplace={(to) => navigate(to, { replace: true })}
         appearance={{ baseTheme: dark }}
       >
-        {content}
+        <AppShell />
       </ClerkProvider>
     );
   }
 
-  return content;
+  return <AppShell />;
 };
 
 export default RootLayout;
