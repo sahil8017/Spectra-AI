@@ -56,7 +56,7 @@ const DashboardPage = () => {
       <form className="main-input" onSubmit={onSubmit}>
         <input name="q" className="input-field" placeholder="Learn anything..." />
         <button className="submit-btn" aria-label="Start learning">
-          <svg viewBox="0 0 24 24" className="submit-icon"><path d="M7 17l10-10M7 7h10v10" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/></svg>
+          <svg viewBox="0 0 24 24" className="submit-icon"><path d="M12 5v14M12 5l-5 5M12 5l5 5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/></svg>
         </button>
       </form>
     </div>
