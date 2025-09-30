@@ -1,0 +1,60 @@
+/* Add this rule at the top of your main CSS file */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.rootLayout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Find this rule in your rootLayout.css file */
+.rootLayout header {
+  /* --- Add these properties --- */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  /* --- Your existing properties --- */
+  display: flex;
+  justify-content: space-between;
+  align-items: left;
+  padding: 16px 20px;
+}
+
+.rootLayout header .logo {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.rootLayout header .logo img {
+  background-color: #f7f8fa; /* Match the page background */
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-right: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+
+
+.rootLayout main {
+  flex: 1;
+}
+
+.rootLayout footer {
+  text-align: center;
+  padding: 16px 0;
+  font-size: 14px;
+  color: #888;
+}
+
+.rootLayout footer p {
+  margin: 0;
+}

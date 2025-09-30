@@ -1,0 +1,367 @@
+/* ======================================= */
+/* CSS VARIABLES                           */
+/* ======================================= */
+:root {
+  --primary-color: #217bfe;
+  --secondary-color: #e55571;
+  --bg-dark: #f7f9fa;           /* Light background */
+  --bg-medium: #e4e6ef;         /* Lighter panel */
+  --bg-light: #ffffff;          /* Pure white used for accents/cards */
+  --text-primary: #18191a;      /* Dark text */
+  --text-secondary: #5a5a5a;    /* Subtext */
+  --text-accent: #1d1d1d;       /* Very dark accent for highlights */
+  --font-main: 'Inter', sans-serif;
+  --animation-speed-fast: 0.3s;
+  --animation-speed-normal: 0.6s;
+}
+
+
+/* ======================================= */
+/* MAIN LAYOUT & STYLES             */
+/* ======================================= */
+.homepage {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  height: 100vh;
+  bottom: 70px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  background-color: var(--bg-dark);
+  font-family: var(--font-main);
+  padding: 0 50px;
+  padding-bottom: 0px;
+}
+
+
+/* --- Left & Right Sections --- */
+.homepage .left {
+  flex: 1.05;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  z-index: 2;
+}
+
+
+.homepage .right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+
+/* --- Typography --- */
+.homepage .brand {
+  font-size: clamp(4rem, 10vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+.homepage .tagline {
+  font-size: clamp(1.5rem, 4vw, 1.75rem);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+
+.homepage .subtext {
+  max-width: 500px;
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+
+.homepage .highlight {
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+
+/* --- CTA Button --- */
+.homepage .cta {
+  display: inline-block;
+  padding: 14px 30px;
+  margin-top: 10px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  color: black;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--animation-speed-fast) ease;
+}
+
+
+.homepage .cta::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  border-radius: 10px;
+  background: var(--bg-dark);
+  opacity: 0;
+  transition: opacity var(--animation-speed-fast) ease;
+}
+
+
+.homepage .cta:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 15px rgba(33, 123, 254, 0.15);
+}
+
+
+.homepage .cta:hover::before {
+  opacity: 1;
+}
+
+
+/* --- Image & Chat Container --- */
+.homepage .imgContainer {
+  width: 90%;
+  max-width: 400px;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  border-radius: 40px;
+  background-color: var(--bg-medium);
+  box-shadow: 0 8px 30px rgba(100, 100, 100, 0.10);
+}
+
+
+.homepage .bgContainer {
+  position: absolute;
+  inset: 0;
+  border-radius: 40px;
+  overflow: hidden;
+}
+
+
+.homepage .bgContainer .bg {
+  width: 200%;
+  height: 100%;
+  background-image: url("/bg.png");
+  background-size: auto 100%;
+  opacity: 0.1;
+  animation: 8s ease-in-out infinite alternate slideBg;
+}
+
+
+.homepage .bot {
+  width: 100%;
+  height: 90%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  animation: 3s ease-in-out infinite alternate botAnimate;
+}
+
+
+.homepage .chat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: 300px;
+  padding: 10px 15px;
+  position: absolute;
+  bottom: -10px;
+  right: -30px;
+  border-radius: 50px;
+  background-color: var(--bg-light);
+  box-shadow: 0 4px 12px rgba(100, 100, 100, 0.08);
+  opacity: 0;
+  animation: fadeInUp 0.5s ease 1s forwards;
+}
+
+
+.homepage .chat img {
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+  border-radius: 100%;
+  object-fit: cover;
+}
+
+
+.homepage .chat .chat-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+
+/* --- Decorative Elements --- */
+.homepage .orbital {
+  position: absolute;
+  bottom: -50px;
+  left: -50px;
+  z-index: 0;
+  width: 100vw;
+  max-width: 600px;
+  opacity: 100%;
+  animation: 100s linear infinite rotateOrbital;
+}
+
+
+/* --- Footer --- */
+.terms {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  position: absolute;
+  bottom: 1px;
+  left: 45%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+
+.terms img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.5;
+  transition: opacity var(--animation-speed-fast) ease;
+}
+
+
+.terms .links {
+  display: flex;
+  gap: 10px;
+  font-size: 10px;
+}
+
+
+.terms .links a,
+.terms .links span {
+  color: #6c6c6c;
+  text-decoration: none;
+  transition: color var(--animation-speed-fast) ease;
+}
+
+
+.terms .links a:hover {
+  color: var(--text-accent);
+}
+
+
+/* ======================================= */
+/* ENTRANCE ANIMATIONS             */
+/* ======================================= */
+.homepage .brand {
+  animation: fadeInUp 1.2s ease forwards;
+}
+
+.homepage .tagline,
+.homepage .subtext,
+.homepage .cta,
+.homepage .right,
+.homepage .terms {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--animation-speed-normal) ease, transform var(--animation-speed-normal) ease;
+}
+
+.homepage.loaded .tagline,
+.homepage.loaded .subtext,
+.homepage.loaded .cta,
+.homepage.loaded .right,
+.homepage.loaded .terms {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+.homepage.loaded .tagline { transition-delay: 0.2s; }
+.homepage.loaded .subtext { transition-delay: 0.3s; }
+.homepage.loaded .cta { transition-delay: 0.4s; }
+.homepage.loaded .right { transition-delay: 0.2s; }
+.homepage.loaded .terms { transition-delay: 0.6s; }
+
+
+/* ======================================= */
+/* KEYFRAMES                   */
+/* ======================================= */
+@keyframes rotateOrbital {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes botAnimate {
+  from { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  to { transform: translate(-50%, -50%) scale(1.05) rotate(-5deg); }
+}
+
+@keyframes slideBg {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ======================================= */
+/* RESPONSIVE STYLES             */
+/* ======================================= */
+@media screen and (max-width: 900px) {
+  .homepage {
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    padding: 5% 5% 120px;
+    text-align: center;
+  }
+
+  .homepage .left {
+    flex: 0;
+    align-items: center;
+    text-align: center;
+  }
+
+  .homepage .right {
+    flex: 1;
+    width: 100%;
+  }
+
+  .homepage .imgContainer {
+    width: 80%;
+    max-height: 400px;
+  }
+
+  .homepage .chat {
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 90%;
+  }
+
+  .terms {
+    bottom: 20px;
+    gap: 10px;
+  }
+}
