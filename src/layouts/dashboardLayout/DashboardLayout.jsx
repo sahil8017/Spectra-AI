@@ -50,16 +50,14 @@ const Icon = ({ name }) => {
   }
 };
 
-const Sidebar = () => {
-  const [expanded, setExpanded] = useState(true);
+const Sidebar = ({ expanded, onToggle }) => {
   const navigate = useNavigate();
-
   const go = (to) => () => navigate(to);
 
   return (
     <aside className={`sidebar ${expanded ? "expanded" : "collapsed"}`}>
       <div className="sidebar-header">
-        <button className="toggle-btn" onClick={() => setExpanded((v) => !v)} aria-label="Toggle sidebar">
+        <button className="toggle-btn" onClick={onToggle} aria-label="Toggle sidebar">
           <Icon name={expanded ? "toggle" : "hamburger"} />
         </button>
         <span className="brand-label">YouLearn</span>
@@ -101,9 +99,10 @@ const Sidebar = () => {
 };
 
 const DashboardLayout = () => {
+  const [expanded, setExpanded] = useState(true);
   return (
-    <div className="dashboard-shell">
-      <Sidebar />
+    <div className={`dashboard-shell ${expanded ? "expanded" : "collapsed"}`}>
+      <Sidebar expanded={expanded} onToggle={() => setExpanded((v) => !v)} />
       <div className="main-area">
         <Outlet />
       </div>
