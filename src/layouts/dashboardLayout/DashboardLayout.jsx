@@ -1,9 +1,9 @@
-
 import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import "./dashboardLayout.css";
 import mockChats from "../../data/mockChats";
 
+// Icon component is restored to include all original icons
 const Icon = ({ name }) => {
   switch (name) {
     case "hamburger":
@@ -21,9 +21,8 @@ const Icon = ({ name }) => {
   }
 };
 
+
 const Sidebar = ({ expanded, onToggle }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -34,18 +33,6 @@ const Sidebar = ({ expanded, onToggle }) => {
     return parts[1] === "chat" ? decodeURIComponent(parts[2] || "") : "";
   }, [pathname]);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
-      setDarkMode(true);
-      document.documentElement.classList.add("dark-mode");
-    }
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark-mode", darkMode);
-    localStorage.setItem("theme", darkMode ? "dark" : "light");
-  }, [darkMode]);
 
   return (
     <aside className={`sidebar ${expanded ? "expanded" : "collapsed"}`}>
@@ -56,62 +43,47 @@ const Sidebar = ({ expanded, onToggle }) => {
         <span className="brand-label">YouLearn</span>
       </div>
 
-      <nav className="nav-section">
-        <ul>
-          <li>
-            <button className="nav-link" onClick={() => navigate("/dashboard")}>
-              <Icon name="search" />
-              <span>Search</span>
-            </button>
-          </li>
-          <li>
-            <button className="nav-link" onClick={() => navigate("/chat/history")}>
-              <Icon name="history" />
-              <span>History</span>
-            </button>
-          </li>
-        </ul>
-      </nav>
+      {/* Conditionally render the main navigation links */}
+      {expanded && (
+        <div className="sidebar-content">
+          <nav className="nav-section">
+            <ul>
+              <li>
+                <button className="nav-link" onClick={() => navigate("/dashboard")}>
+                  <Icon name="search" />
+                  <span>Search</span>
+                </button>
+              </li>
+              <li>
+                <button className="nav-link" onClick={() => navigate("/chat/history")}>
+                  <Icon name="history" />
+                  <span>History</span>
+                </button>
+              </li>
+            </ul>
+          </nav>
 
-      <div className="section-title">Recent Chats</div>
-      <nav className="nav-section">
-        <ul>
-          {recentChats.map((c) => (
-            <li key={c.id}>
-              <button className={`nav-link ${activeChatId === c.id ? "active" : ""}`} onClick={() => navigate(`/chat/${encodeURIComponent(c.id)}`)}>
-                <Icon name="chat" />
-                <span>{c.title}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <div className="section-title">Help & Tools</div>
-      <nav className="nav-section">
-        <ul>
-          <li><button className="nav-link" onClick={() => navigate("/chat/feedback")}><Icon name="chat" /><span>Feedback</span></button></li>
-          <li><button className="nav-link" onClick={() => navigate("/chat/guide")}><Icon name="chat" /><span>Quick Guide</span></button></li>
-        </ul>
-      </nav>
+          <div className="section-title">Recent Chats</div>
+          <nav className="nav-section">
+            <ul>
+              {recentChats.map((c) => (
+                <li key={c.id}>
+                  <button className={`nav-link ${activeChatId === c.id ? "active" : ""}`} onClick={() => navigate(`/chat/${encodeURIComponent(c.id)}`)}>
+                    <Icon name="chat" />
+                    <span>{c.title}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      )}
 
       <div className="sidebar-footer">
-        <button className="user-settings" onClick={() => setMenuOpen((v) => !v)}>
-          <span className="avatar" aria-hidden="true">SG</span>
-          <span className="user-label">SAHIL GUPTA</span>
+        <button className="nav-link" onClick={() => navigate("/settings")}>
+          <Icon name="gear" />
+          <span>Settings</span>
         </button>
-        {menuOpen && (
-          <div className="settings-menu" role="menu">
-            <button className="menu-item" onClick={() => navigate("/dashboard")}>
-              <Icon name="gear" />
-              <span>Settings</span>
-            </button>
-            <label className="menu-item toggle">
-              <input type="checkbox" checked={darkMode} onChange={(e) => setDarkMode(e.target.checked)} />
-              <span>Dark mode</span>
-            </label>
-          </div>
-        )}
       </div>
     </aside>
   );
@@ -119,8 +91,12 @@ const Sidebar = ({ expanded, onToggle }) => {
 
 const DashboardLayout = () => {
   const [expanded, setExpanded] = useState(false);
+
+  // We need to manage the class on the shell for the CSS to work correctly
+  const shellClass = expanded ? "dashboard-shell" : "dashboard-shell collapsed";
+
   return (
-    <div className={`dashboard-shell ${expanded ? "expanded" : "collapsed"}`}>
+    <div className={shellClass}>
       <Sidebar expanded={expanded} onToggle={() => setExpanded((v) => !v)} />
       <div className="main-area">
         <Outlet />

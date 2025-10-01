@@ -4,20 +4,22 @@
 :root {
   --primary-color: #217bfe;
   --secondary-color: #e55571;
-  --bg-dark: #f7f9fa;           /* Light background */
-  --bg-medium: #e4e6ef;         /* Lighter panel */
-  --bg-light: #ffffff;          /* Pure white used for accents/cards */
-  --text-primary: #18191a;      /* Dark text */
-  --text-secondary: #5a5a5a;    /* Subtext */
-  --text-accent: #1d1d1d;       /* Very dark accent for highlights */
+  --bg-dark: #f7f9fa;      /* Light background */
+  --bg-medium: #e4e6ef;    /* Lighter panel */
+  --bg-light: #ffffff;      /* Pure white used for accents/cards */
+  --text-primary: #18191a;   /* Dark text */
+  --text-secondary: #5a5a5a;   /* Subtext */
+  --text-accent: #1d1d1d;     /* Very dark accent for highlights */
   --font-main: 'Inter', sans-serif;
   --animation-speed-fast: 0.3s;
   --animation-speed-normal: 0.6s;
+  /* ✨ NEW: A custom easing function for a smooth "ease-out" effect */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 
 /* ======================================= */
-/* MAIN LAYOUT & STYLES             */
+/* MAIN LAYOUT & STYLES                    */
 /* ======================================= */
 .homepage {
   display: flex;
@@ -103,7 +105,9 @@
   font-size: 1rem;
   font-weight: 600;
   text-decoration: none;
-  transition: all var(--animation-speed-fast) ease;
+  /* ✨ UPDATED: More specific transition properties for better performance */
+  transition: transform var(--animation-speed-fast) var(--ease-out-quint),
+              box-shadow var(--animation-speed-fast) var(--ease-out-quint);
 }
 
 
@@ -120,8 +124,8 @@
 
 
 .homepage .cta:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 4px 15px rgba(33, 123, 254, 0.15);
+  transform: translateY(-3px) scale(1.04); /* Slightly increased effect */
+  box-shadow: 0 6px 20px rgba(33, 123, 254, 0.2);
 }
 
 
@@ -156,7 +160,8 @@
   background-image: url("/bg.png");
   background-size: auto 100%;
   opacity: 0.1;
-  animation: 8s ease-in-out infinite alternate slideBg;
+  /* ✨ UPDATED: A custom cubic-bezier for a more natural sine-wave-like motion */
+  animation: 8s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite alternate slideBg;
 }
 
 
@@ -168,7 +173,9 @@
   left: 50%;
   transform: translate(-50%, -50%);
   object-fit: contain;
-  animation: 3s ease-in-out infinite alternate botAnimate;
+  /* ✨ UPDATED: Using a smoother bezier curve and hinting to the browser for optimization */
+  animation: 4s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite alternate botAnimate;
+  will-change: transform; /* Performance hint for the browser */
 }
 
 
@@ -186,7 +193,7 @@
   background-color: var(--bg-light);
   box-shadow: 0 4px 12px rgba(100, 100, 100, 0.08);
   opacity: 0;
-  animation: fadeInUp 0.5s ease 1s forwards;
+  animation: fadeInUp 0.6s var(--ease-out-quint) 1s forwards; /* ✨ UPDATED: Using new easing */
 }
 
 
@@ -262,10 +269,11 @@
 
 
 /* ======================================= */
-/* ENTRANCE ANIMATIONS             */
+/* ENTRANCE ANIMATIONS                     */
 /* ======================================= */
 .homepage .brand {
-  animation: fadeInUp 1.2s ease forwards;
+  /* ✨ UPDATED: Using new easing */
+  animation: fadeInUp 1.2s var(--ease-out-quint) forwards;
 }
 
 .homepage .tagline,
@@ -275,7 +283,9 @@
 .homepage .terms {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity var(--animation-speed-normal) ease, transform var(--animation-speed-normal) ease;
+  /* ✨ UPDATED: Using new easing for all entrance transitions */
+  transition: opacity var(--animation-speed-normal) var(--ease-out-quint),
+              transform var(--animation-speed-normal) var(--ease-out-quint);
 }
 
 .homepage.loaded .tagline,
@@ -296,7 +306,7 @@
 
 
 /* ======================================= */
-/* KEYFRAMES                   */
+/* KEYFRAMES                               */
 /* ======================================= */
 @keyframes rotateOrbital {
   from { transform: rotate(0deg); }
@@ -304,8 +314,13 @@
 }
 
 @keyframes botAnimate {
-  from { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-  to { transform: translate(-50%, -50%) scale(1.05) rotate(-5deg); }
+  from {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  /* ✨ UPDATED: Added a subtle vertical movement for a more 'floaty' feel */
+  to {
+    transform: translate(-50%, -52%) scale(1.05) rotate(-5deg);
+  }
 }
 
 @keyframes slideBg {
@@ -326,7 +341,7 @@
 
 
 /* ======================================= */
-/* RESPONSIVE STYLES             */
+/* RESPONSIVE STYLES                       */
 /* ======================================= */
 @media screen and (max-width: 900px) {
   .homepage {

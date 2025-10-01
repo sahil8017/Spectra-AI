@@ -2,7 +2,6 @@
   display: flex; 
   justify-content: center;
   align-items: center;
-  font-family: 'Arial', sans-serif; 
-  padding: 40px 20px;
+  font-family: 'arial', sans-serif;
   overflow-y: auto; 
 }

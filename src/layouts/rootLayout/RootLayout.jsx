@@ -11,7 +11,7 @@ const AppShell = ({ hasClerk }) => {
       <header>
         <Link to="/" className="logo">
           <img src="/logo.png" alt="logo" />
-          <span>YouLearn</span>
+          <span>spECTRA</span>
         </Link>
         <div className="user">
           {hasClerk ? (
