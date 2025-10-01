@@ -13,18 +13,36 @@ import SignInPage from "./routes/signInPage/SignInPage";
 import SignUpPage from "./routes/signUpPage/SignUpPage";
 
 const router = createBrowserRouter([
+  // Group 1: Dashboard Routes (Protected)
   {
-    element: <RootLayout />,
+    element: <DashboardLayout />, // This is now a top-level layout
+    path: "dashboard", // Base path for all routes inside
     children: [
-      { path: "/", element: <Homepage /> },
-      { path: "/sign-in", element: <SignInPage /> },
-      { path: "/sign-up", element: <SignUpPage /> },
       {
-        element: <DashboardLayout />,
-        children: [
-          { path: "dashboard", element: <DashboardPage /> },
-          { path: "chat/:id", element: <ChatPage /> },
-        ],
+        path: "", // Index route, resolves to "/dashboard"
+        element: <DashboardPage />,
+      },
+      {
+        path: "chats/:id", // Resolves to "/dashboard/chats/:id"
+        element: <ChatPage />,
+      },
+    ],
+  },
+  // Group 2: Public Routes
+  {
+    element: <RootLayout />, // This is the layout for public pages
+    children: [
+      {
+        path: "/",
+        element: <Homepage />,
+      },
+      {
+        path: "/sign-in",
+        element: <SignInPage />,
+      },
+      {
+        path: "/sign-up",
+        element: <SignUpPage />,
       },
     ],
   },

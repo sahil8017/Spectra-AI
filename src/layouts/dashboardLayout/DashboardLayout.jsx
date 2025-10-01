@@ -1,106 +1,97 @@
 import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import "./dashboardLayout.css";
-import mockChats from "../../data/mockChats";
 
-// Icon component is restored to include all original icons
-const Icon = ({ name }) => {
-  switch (name) {
-    case "hamburger":
-      return (<svg viewBox="0 0 24 24" className="icon"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" /></svg>);
-    case "search":
-      return (<svg viewBox="0 0 24 24" className="icon"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" fill="none" /><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" /></svg>);
-    case "history":
-      return (<svg viewBox="0 0 24 24" className="icon"><path d="M3 12a9 9 0 1 0 3-6.708" stroke="currentColor" strokeWidth="2" fill="none" /><path d="M3 3v6h6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" /></svg>);
-    case "chat":
-      return (<svg viewBox="0 0 24 24" className="icon"><path d="M4 5h16v10H8l-4 4z" stroke="currentColor" strokeWidth="2" fill="none" /></svg>);
-    case "gear":
-      return (<svg viewBox="0 0 24 24" className="icon"><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z" stroke="currentColor" strokeWidth="2" fill="none" /><path d="M2 12h3M19 12h3M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" stroke="currentColor" strokeWidth="2" fill="none" /></svg>);
-    default:
-      return null;
-  }
-};
+// A simple Icon component for SVG paths
+const Icon = ({ path }) => (
+  <svg viewBox="0 0 24 24" className="icon">
+    <path d={path} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
-
-const Sidebar = ({ expanded, onToggle }) => {
+// --- SIDEBAR COMPONENT ---
+const Sidebar = ({ isExpanded, onToggle }) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const recentChats = mockChats;
+  // This will be dynamic later
+  const recentChats = [
+    { id: "1", title: "My first chat" },
+    { id: "2", title: "React project ideas" },
+    { id: "3", title: "History of India" },
+  ];
 
   const activeChatId = useMemo(() => {
     const parts = pathname.split("/");
     return parts[1] === "chat" ? decodeURIComponent(parts[2] || "") : "";
   }, [pathname]);
 
-
   return (
-    <aside className={`sidebar ${expanded ? "expanded" : "collapsed"}`}>
+    <aside className={`sidebar ${isExpanded ? "expanded" : "collapsed"}`}>
+      {/* Header with Toggle and Logo */}
       <div className="sidebar-header">
-        <button className="toggle-btn" onClick={onToggle} aria-label="Toggle sidebar">
-          <Icon name="hamburger" />
+        <button className="icon-button" onClick={onToggle} aria-label="Toggle sidebar">
+          <Icon path="M3 6h18M3 12h18M3 18h18" />
         </button>
-        <span className="brand-label">YouLearn</span>
+        <span className="brand-label">LAMA AI</span>
       </div>
 
-      {/* Conditionally render the main navigation links */}
-      {expanded && (
-        <div className="sidebar-content">
-          <nav className="nav-section">
-            <ul>
-              <li>
-                <button className="nav-link" onClick={() => navigate("/dashboard")}>
-                  <Icon name="search" />
-                  <span>Search</span>
-                </button>
-              </li>
-              <li>
-                <button className="nav-link" onClick={() => navigate("/chat/history")}>
-                  <Icon name="history" />
-                  <span>History</span>
-                </button>
-              </li>
-            </ul>
-          </nav>
+      {/* Main Navigation */}
+      <nav className="sidebar-nav">
+        <button className="nav-link new-chat" onClick={() => navigate("/chat/new-session")}>
+          <Icon path="M12 5v14m-7-7h14" />
+          <span className="nav-text">New Chat</span>
+        </button>
 
-          <div className="section-title">Recent Chats</div>
-          <nav className="nav-section">
+        {/* Expanded View Content */}
+        <div className="expanded-content">
+          <div className="search-box">
+            <Icon path="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
+            <input type="text" placeholder="Search Chat" />
+          </div>
+
+          <div className="nav-section">
+            <h3 className="section-title">Recent Chats</h3>
             <ul>
               {recentChats.map((c) => (
                 <li key={c.id}>
                   <button className={`nav-link ${activeChatId === c.id ? "active" : ""}`} onClick={() => navigate(`/chat/${encodeURIComponent(c.id)}`)}>
-                    <Icon name="chat" />
-                    <span>{c.title}</span>
+                    <span className="nav-text">{c.title}</span>
                   </button>
                 </li>
               ))}
+              <li>
+                <button className="nav-link all-previous">
+                  <span className="nav-text">All Previous</span>
+                </button>
+              </li>
             </ul>
-          </nav>
+          </div>
         </div>
-      )}
+      </nav>
 
+      {/* Footer with Settings */}
       <div className="sidebar-footer">
         <button className="nav-link" onClick={() => navigate("/settings")}>
-          <Icon name="gear" />
-          <span>Settings</span>
+          <Icon path="M19.14,12.94a4,4,0,0,0-4.48-4.48l-2.83-2.83a4,4,0,0,0-5.66,5.66l2.83,2.83a4,4,0,0,0,4.48,4.48l2.83,2.83a4,4,0,0,0,5.66-5.66Z" />
+          <span className="nav-text">Settings</span>
         </button>
       </div>
     </aside>
   );
 };
 
-const DashboardLayout = () => {
-  const [expanded, setExpanded] = useState(false);
 
-  // We need to manage the class on the shell for the CSS to work correctly
-  const shellClass = expanded ? "dashboard-shell" : "dashboard-shell collapsed";
+// --- DASHBOARD LAYOUT COMPONENT ---
+const DashboardLayout = () => {
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
   return (
-    <div className={shellClass}>
-      <Sidebar expanded={expanded} onToggle={() => setExpanded((v) => !v)} />
-      <div className="main-area">
+    <div className={`dashboard-shell ${isSidebarExpanded ? "expanded" : "collapsed"}`}>
+      <Sidebar isExpanded={isSidebarExpanded} onToggle={() => setIsSidebarExpanded((prev) => !prev)} />
+      <main className="main-content">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 };
