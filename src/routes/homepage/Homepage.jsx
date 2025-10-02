@@ -19,11 +19,11 @@ const Homepage = () => {
       <img src="/orbital.png" alt="Orbital background" className="orbital" />
 
       <div className="left">
-        <h1 className="brand">NEXA</h1>
+        <h1 className="brand">spECTRA</h1>
 
         <h2 className="tagline">Summarize YouTube. Smarter. Faster.</h2>
         <p className="subtext">
-          Skip the fluff, capture the essence. NEXA turns hours of YouTube into
+          Skip the fluff, capture the essence. spECTRA turns hours of YouTube into
           <span className="highlight"> sharp, AI-powered insights</span> — so
           you learn more in less time.
         </p>
@@ -60,13 +60,13 @@ const Homepage = () => {
             />
             <TypeAnimation
               sequence={[
-                "Welcome to NEXA! Paste a YouTube link to get started.",
+                "Welcome to SPECTRA! Paste a YouTube link to get started.",
                 2000,
                 () => setTypingStatus("human1"),
-                "Save time and learn more with NEXA's smart summaries.",
+                "Save time and learn more with spECTRA's smart summaries.",
                 2000,
                 () => setTypingStatus("bot"),
-                "NEXA uses advanced AI to summarize videos quickly.",
+                "SPECTRA uses advanced AI to summarize videos quickly.",
                 2000,
                 () => setTypingStatus("human2"),
                 "Try it out now and see the magic!",

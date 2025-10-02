@@ -1,19 +1,27 @@
-import { Outlet, useNavigate, Link } from "react-router-dom";
+// src/layouts/rootLayout/RootLayout.jsx
+// MODIFIED FILE
+
+import { Outlet, Link, useLocation } from "react-router-dom"; // Add useLocation
+import { SignedIn, UserButton } from "@clerk/clerk-react";
+import { AnimatePresence } from "framer-motion"; // Import AnimatePresence
+import ThemeToggle from "../../components/ThemeToggle/ThemeToggle";
+import PageTransition from "../../components/PageTransition/PageTransition"; // Import our new component
 import "./rootLayout.css";
-import { ClerkProvider, SignedIn, UserButton } from "@clerk/clerk-react";
-import { dark } from "@clerk/themes";
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const RootLayout = () => {
+  const hasClerk = Boolean(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
+  const location = useLocation(); // Get the current location
 
-const AppShell = ({ hasClerk }) => {
   return (
     <div className="rootLayout">
       <header>
+        {/* Your header code remains the same... */}
         <Link to="/" className="logo">
           <img src="/logo.png" alt="logo" />
           <span>spECTRA</span>
         </Link>
         <div className="user">
+          <ThemeToggle />
           {hasClerk ? (
             <SignedIn>
               <UserButton afterSignOutUrl="/" />
@@ -22,30 +30,15 @@ const AppShell = ({ hasClerk }) => {
         </div>
       </header>
       <main>
-        <Outlet />
+        {/* This is the key change! */}
+        <AnimatePresence mode="wait">
+          <PageTransition key={location.pathname}>
+            <Outlet />
+          </PageTransition>
+        </AnimatePresence>
       </main>
     </div>
   );
-};
-
-const RootLayout = () => {
-  const navigate = useNavigate();
-  const hasClerk = Boolean(PUBLISHABLE_KEY);
-
-  if (hasClerk) {
-    return (
-      <ClerkProvider
-        publishableKey={PUBLISHABLE_KEY}
-        routerPush={(to) => navigate(to)}
-        routerReplace={(to) => navigate(to, { replace: true })}
-        appearance={{ baseTheme: dark }}
-      >
-        <AppShell hasClerk />
-      </ClerkProvider>
-    );
-  }
-
-  return <AppShell hasClerk={false} />;
 };
 
 export default RootLayout;

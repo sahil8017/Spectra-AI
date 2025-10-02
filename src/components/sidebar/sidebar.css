@@ -6,7 +6,7 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh; /* Make sidebar take full viewport height */
   padding: 16px;
   background: #1a1a2e;
   border-right: 1px solid #2d2d4a;
@@ -24,7 +24,8 @@
   align-items: center;
   gap: 16px;
   margin-bottom: 24px;
-  min-height: 40px; /* Prevents layout shift */
+  min-height: 40px;
+  flex-shrink: 0; /* <-- ADDED: Prevents the header from shrinking */
 }
 .sidebar .logo {
   height: 32px;
@@ -32,17 +33,20 @@
 }
 
 /* Navigation */
+/* --- KEY CHANGE AREA --- */
 .sidebar-nav {
+  flex-grow: 1;      /* <-- MOVED HERE: Make this middle section take all available space */
+  overflow-y: auto;  /* <-- MOVED HERE: Make this section scroll if its content overflows */
   display: flex;
   flex-direction: column;
-  flex-grow: 1; /* Key for making the middle section fill space */
-  overflow: hidden; /* Prevents content from spilling out during animation */
 }
+/* --- END KEY CHANGE AREA --- */
+
 
 /* Scrollable Recent Chats List */
 .recent-chats-list {
-  flex-grow: 1; /* Makes this specific div grow */
-  overflow-y: auto; /* Makes ONLY this div scrollable */
+  /* flex-grow: 1; <-- REMOVED: The parent .sidebar-nav now controls the growth */
+  /* overflow-y: auto; <-- REMOVED: The parent .sidebar-nav now controls the scrolling */
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -58,7 +62,7 @@
   text-decoration: none;
   color: #e3e3e3;
   font-size: 14px;
-  white-space: nowrap; /* Prevents text from wrapping */
+  white-space: nowrap;
   transition: background-color 0.2s ease;
 }
 .nav-item:hover { background: #2d2d4a; }
@@ -78,10 +82,33 @@
   pointer-events: none;
 }
 
-/* Footer: Settings */
+/* Footer: Settings and User Profile */
 .sidebar-footer {
-  margin-top: auto; /* Pushes settings to the bottom */
+  margin-top: auto; /* This correctly pushes it to the bottom */
+  padding-top: 16px;
+  border-top: 1px solid #2d2d4a;
+  flex-shrink: 0; /* <-- ADDED: Prevents the footer from shrinking */
 }
+
+.user-profile {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Styling Clerk's UserButton */
+.user-profile .cl-userButtonBox {
+  width: 100%;
+}
+.user-profile .cl-userButtonBox .cl-avatarBox {
+  width: 40px;
+  height: 40px;
+}
+.sidebar.collapsed .user-profile .cl-userButtonTrigger {
+  justify-content: center;
+}
+
 
 /* Helper classes */
 .icon-button { background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; }

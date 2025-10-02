@@ -1,23 +1,159 @@
-.learn-dashboard { height: 100%; display: flex; flex-direction: column; gap: 24px; }
-.page-title { font-size: 24px; font-weight: 700; color: var(--text, #0f172a); text-align: center; }
+/* In dashboardPage.css, replace the old .learn-dashboard class with this one */
 
-.action-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; max-width: 960px; margin: 0 auto; }
-.action-card { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--border, #e5e7eb); background: var(--card-bg, #fff); border-radius: 16px; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease, background 200ms ease; box-shadow: var(--shadow, 0 8px 24px rgba(0,0,0,.06)); }
-.action-card:hover { transform: translateY(-2px); }
-.card-icon { width: 24px; height: 24px; color: #3b82f6; }
-.card-text { display: flex; flex-direction: column; }
-.card-title { font-weight: 600; color: var(--text, #0f172a); }
-.card-desc { font-size: 12px; color: var(--muted, #64748b); }
+.learn-dashboard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  /* CHANGE 1: We'll align everything to the top of the container now. */
+  justify-content: flex-start;
+  
+  gap: 50px;
 
-.main-input { position: relative; margin-top: 6px; max-width: 960px; width: 100%; margin-left: auto; margin-right: auto; }
-.input-field { width: 100%; padding: 16px 56px 16px 16px; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; outline: none; background: var(--card-bg, #ffffff); color: var(--text, #0f172a); font-size: 15px; }
-.input-field::placeholder { color: var(--muted, #64748b); }
-.input-field:focus { border-color: #cbd5e1; box-shadow: 0 0 0 3px rgba(148,163,184,.2); }
-.submit-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--border, #e5e7eb); background: #f1f5f9; color: var(--text, #0f172a); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
-.submit-btn:hover { background: #e5e7eb; }
-.submit-icon { width: 18px; height: 18px; }
+  /* CHANGE 2: We'll add a large top padding to push the content down. */
+  /* This uses 'vh' (viewport height) to ensure it looks good on all screen sizes. */
+  padding: 20vh 24px 24px;
+}
 
-@media (max-width: 900px) { .action-cards { grid-template-columns: 1fr; } }
+.page-title {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+}
 
-.dark-mode .page-title { color: var(--text, #f3f4f6); }
-.dark-mode .submit-btn { background: #1f2937; border-color: #374151; color: #e5e7eb; }
+/* --- New Modern Input Component Styles --- */
+
+.modern-input-wrapper {
+  width: 100%;
+  max-width: 680px;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 24px;
+  transition: all 0.3s ease;
+}
+.input-container:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 20%, transparent);
+}
+
+/* Base styles for all buttons inside the input */
+.input-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: var(--bg-tertiary);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.input-button:hover {
+  background-color: var(--border-primary);
+}
+
+.input-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--text-secondary);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* Mode Switcher Button */
+.mode-switch-btn {
+  width: 48px;
+  height: 48px;
+  perspective: 1000px; /* For 3D flip effect */
+  background-color: transparent;
+}
+.mode-switch-btn:hover { background-color: var(--bg-tertiary); }
+
+.icon-flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+}
+.modern-input-wrapper.youtube .icon-flipper {
+  transform: rotateY(180deg);
+}
+
+.icon-flipper .input-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  backface-visibility: hidden; /* Hide the back of the icon during flip */
+}
+.icon-flipper .icon-youtube {
+  transform: rotateY(180deg);
+  color: #ff0000; /* YouTube Red */
+}
+
+/* Upload Button (+) */
+.upload-btn {
+  width: 48px;
+  height: 48px;
+  transform-origin: center;
+}
+.modern-input-wrapper.youtube .upload-btn {
+  transform: scale(0);
+  width: 0;
+  padding: 0;
+  margin-left: -8px; /* Collapse margin */
+  opacity: 0;
+}
+
+/* Animated Inputs Container */
+.input-fields-container {
+  flex-grow: 1;
+  position: relative;
+  height: 48px;
+  overflow: hidden;
+}
+.modern-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-family: 'Sora', sans-serif;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+}
+.modern-input::placeholder { color: var(--text-secondary); }
+
+/* The Sliding Animation */
+.modern-input-wrapper.question .modern-input[name="question"] { transform: translateY(0%); opacity: 1; }
+.modern-input-wrapper.question .modern-input[name="youtube"] { transform: translateY(100%); opacity: 0; }
+.modern-input-wrapper.youtube .modern-input[name="question"] { transform: translateY(-100%); opacity: 0; }
+.modern-input-wrapper.youtube .modern-input[name="youtube"] { transform: translateY(0%); opacity: 1; }
+
+
+/* Submit Button (Arrow) */
+.modern-submit-btn {
+  width: 48px;
+  height: 48px;
+  background-color: var(--accent-primary);
+}
+.modern-submit-btn .input-icon { color: white; }
+html.dark .modern-submit-btn .input-icon { color: var(--text-primary); }
+.modern-submit-btn:hover {
+  filter: brightness(1.1);
+}

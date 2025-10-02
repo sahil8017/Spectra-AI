@@ -1,9 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { ThemeProvider } from "./context/ThemeContext"; // Import ThemeProvider
 
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-
+// Import your layouts and pages
 import Homepage from "./routes/homepage/Homepage";
 import DashboardPage from "./routes/dashboardPage/DashboardPage";
 import ChatPage from "./routes/chatPage/chatPage";
@@ -12,11 +14,29 @@ import DashboardLayout from "./layouts/dashboardLayout/DashboardLayout";
 import SignInPage from "./routes/signInPage/SignInPage";
 import SignUpPage from "./routes/signUpPage/SignUpPage";
 
+// Get the Publishable Key from your environment variables
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Publishable Key");
+}
+
 const router = createBrowserRouter([
-  // Group 1: Dashboard Routes (Protected)
+  // Group 1: Dashboard Routes (Now Protected)
   {
-    element: <DashboardLayout />, // This is now a top-level layout
-    path: "dashboard", // Base path for all routes inside
+    path: "/dashboard",
+    element: (
+      <>
+        {/* If the user is signed in, render the DashboardLayout. */}
+        <SignedIn>
+          <DashboardLayout />
+        </SignedIn>
+        {/* If the user is signed out, redirect them to the sign-in page. */}
+        <SignedOut>
+          <Navigate to="/sign-in" replace />
+        </SignedOut>
+      </>
+    ),
     children: [
       {
         path: "", // Index route, resolves to "/dashboard"
@@ -30,18 +50,18 @@ const router = createBrowserRouter([
   },
   // Group 2: Public Routes
   {
-    element: <RootLayout />, // This is the layout for public pages
+    element: <RootLayout />,
     children: [
       {
         path: "/",
         element: <Homepage />,
       },
       {
-        path: "/sign-in",
+        path: "/sign-in/*", // Use a wildcard to let Clerk handle fallback routes
         element: <SignInPage />,
       },
       {
-        path: "/sign-up",
+        path: "/sign-up/*", // Use a wildcard to let Clerk handle fallback routes
         element: <SignUpPage />,
       },
     ],
@@ -50,6 +70,11 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    {/* Wrap the ClerkProvider with ThemeProvider */}
+    <ThemeProvider>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <RouterProvider router={router} />
+      </ClerkProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );
