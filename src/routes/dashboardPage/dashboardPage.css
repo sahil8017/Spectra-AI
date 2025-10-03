@@ -1,27 +1,48 @@
-/* In dashboardPage.css, replace the old .learn-dashboard class with this one */
-
 .learn-dashboard {
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  
-  /* CHANGE 1: We'll align everything to the top of the container now. */
   justify-content: flex-start;
-  
   gap: 50px;
+  padding: 17vh 24px 24px;
+}
 
-  /* CHANGE 2: We'll add a large top padding to push the content down. */
-  /* This uses 'vh' (viewport height) to ensure it looks good on all screen sizes. */
-  padding: 20vh 24px 24px;
+/* This new div groups the title and subtitle */
+.title-group {
+  text-align: center;
 }
 
 .page-title {
   font-size: clamp(2rem, 5vw, 2.75rem);
   font-weight: 700;
   color: var(--text-primary);
-  text-align: center;
+  /* Removed min-height as it's no longer needed */
 }
+
+/* --- NEW Style for the Subtitle --- */
+.page-subtitle {
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+/* New style for the wrapper that syncs the subtitle and form */
+.synced-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px; /* This maintains the original gap */
+}
+/* This new div wraps the form to help with layout and animation */
+.form-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+/* -------------------------------------- */
+
 
 /* --- New Modern Input Component Styles --- */
 

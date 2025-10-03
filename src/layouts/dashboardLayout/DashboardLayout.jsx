@@ -79,11 +79,6 @@ const Sidebar = () => {
                   </button>
                 </li>
               ))}
-              <li>
-                <button className="nav-link all-previous">
-                  <span className="nav-text">All Previous</span>
-                </button>
-              </li>
             </ul>
           </div>
         </div>
