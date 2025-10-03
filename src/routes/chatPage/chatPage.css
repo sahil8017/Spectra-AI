@@ -1,0 +1,198 @@
+/* Add this CSS Reset at the TOP of the file */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* styles.css or index.css */
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+/* Your existing styles start here */
+.chat-view {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  overflow: hidden;
+}
+
+.messages-area {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.message {
+  padding: 12px 18px;
+  border-radius: 20px;
+  line-height: 1.5;
+  font-size: 15px;
+  width: fit-content;
+}
+
+.message.ai {
+  align-self: flex-start;
+  max-width: 65%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  border-top-left-radius: 4px;
+}
+
+.message.user {
+  align-self: flex-end;
+  max-width: 65%;
+  background: var(--accent-primary);
+  color: white;
+  border-top-right-radius: 4px;
+}
+
+html.dark .message.user {
+ color: var(--text-primary);
+}
+
+.chat-input-wrapper {
+  width: 100%;
+  max-width: 850px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 12px 24px 24px 24px; 
+  background: var(--bg-secondary);
+}
+/* --- Styles for the Modern Input Component --- */
+.modern-input-wrapper {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.input-container {
+  display: flex;
+  /* ADJUSTMENT: Align items to the bottom when textarea grows */
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 24px;
+  transition: all 0.3s ease;
+}
+.input-container:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 20%, transparent);
+}
+
+.input-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: var(--bg-tertiary);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  width: 48px;  /* ADDED: Explicit width for consistency */
+  height: 48px; /* ADDED: Explicit height for consistency */
+}
+.input-button:hover {
+  background-color: var(--border-primary);
+}
+
+.input-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--text-secondary);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.mode-switch-btn {
+  perspective: 1000px;
+  background-color: transparent;
+}
+.mode-switch-btn:hover { background-color: var(--bg-tertiary); }
+
+.icon-flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+}
+.modern-input-wrapper.youtube .icon-flipper {
+  transform: rotateY(180deg);
+}
+
+.icon-flipper .input-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  backface-visibility: hidden;
+}
+.icon-flipper .icon-youtube {
+  transform: rotateY(180deg);
+  color: #ff0000;
+}
+
+.upload-btn {
+  transform-origin: center;
+}
+.modern-input-wrapper.youtube .upload-btn {
+  transform: scale(0);
+  width: 0;
+  padding: 0;
+  margin-left: -8px;
+  opacity: 0;
+}
+
+.input-fields-container {
+  flex-grow: 1;
+  position: relative;
+  /* ADJUSTMENT: Removed fixed height to allow textarea to grow */
+}
+
+/* ADJUSTMENT: These styles now target the textarea */
+.modern-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 12px 8px; /* ADJUSTMENT: Better vertical padding */
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-family: 'Sora', sans-serif;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+  resize: none; /* ADDED: Prevents manual resizing by user */
+  line-height: 1.5; /* ADDED: Better text spacing */
+  max-height: 200px; /* ADDED: Prevents the input from getting too tall */
+  overflow-y: auto; /* ADDED: Adds scrollbar if max-height is reached */
+}
+
+.modern-input::placeholder { color: var(--text-secondary); }
+
+.modern-input-wrapper.question .modern-input[name="question"] { transform: translateY(0%); opacity: 1; }
+.modern-input-wrapper.question .modern-input[name="youtube"] { transform: translateY(100%); opacity: 0; }
+.modern-input-wrapper.youtube .modern-input[name="question"] { transform: translateY(-100%); opacity: 0; }
+.modern-input-wrapper.youtube .modern-input[name="youtube"] { transform: translateY(0%); opacity: 1; }
+
+.modern-submit-btn {
+  background-color: var(--accent-primary);
+}
+.modern-submit-btn .input-icon { color: white; }
+html.dark .modern-submit-btn .input-icon { color: var(--text-primary); }
+.modern-submit-btn:hover {
+  filter: brightness(1.1);
+}
+/* REMOVED: Extra closing brace "}" was here */
