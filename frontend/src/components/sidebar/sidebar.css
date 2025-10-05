@@ -1,0 +1,140 @@
+:root {
+  --sidebar-width-expanded: 260px;
+  --sidebar-width-collapsed: 80px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Make sidebar take full viewport height */
+  padding: 16px;
+  background: #1a1a2e;
+  border-right: 1px solid #2d2d4a;
+  transition: width 0.3s ease-in-out;
+  color: #e3e3e3;
+}
+
+/* Width based on state */
+.sidebar.expanded { width: var(--sidebar-width-expanded); }
+.sidebar.collapsed { width: var(--sidebar-width-collapsed); }
+
+/* Header: Hamburger and Logo */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  min-height: 40px;
+  flex-shrink: 0; /* <-- ADDED: Prevents the header from shrinking */
+}
+.sidebar .logo {
+  height: 32px;
+  width: auto;
+}
+
+/* Navigation */
+/* --- KEY CHANGE AREA --- */
+.sidebar-nav {
+  flex-grow: 1;      /* <-- MOVED HERE: Make this middle section take all available space */
+  overflow-y: auto;  /* <-- MOVED HERE: Make this section scroll if its content overflows */
+  display: flex;
+  flex-direction: column;
+}
+/* --- END KEY CHANGE AREA --- */
+
+
+/* Scrollable Recent Chats List */
+.recent-chats-list {
+  /* flex-grow: 1; <-- REMOVED: The parent .sidebar-nav now controls the growth */
+  /* overflow-y: auto; <-- REMOVED: The parent .sidebar-nav now controls the scrolling */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* General Navigation Items */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #e3e3e3;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+.nav-item:hover { background: #2d2d4a; }
+.nav-item img { width: 24px; height: 24px; flex-shrink: 0; }
+.nav-item span {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Hide text when collapsed */
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .nav-title,
+.sidebar.collapsed .search-box {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Footer: Settings and User Profile */
+.sidebar-footer {
+  margin-top: auto; /* This correctly pushes it to the bottom */
+  padding-top: 16px;
+  border-top: 1px solid #2d2d4a;
+  flex-shrink: 0; /* <-- ADDED: Prevents the footer from shrinking */
+}
+
+.user-profile {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Styling Clerk's UserButton */
+.user-profile .cl-userButtonBox {
+  width: 100%;
+}
+.user-profile .cl-userButtonBox .cl-avatarBox {
+  width: 40px;
+  height: 40px;
+}
+.sidebar.collapsed .user-profile .cl-userButtonTrigger {
+  justify-content: center;
+}
+
+
+/* Helper classes */
+.icon-button { background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; }
+.icon-button:hover { background: #2d2d4a; }
+.icon-button img { width: 24px; height: 24px; }
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #2d2d4a;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+.search-box input {
+  background: none;
+  border: none;
+  outline: none;
+  color: #e3e3e3;
+  width: 100%;
+}
+.nav-title {
+  font-weight: 600;
+  font-size: 11px;
+  margin: 16px 0 8px;
+  color: #9aa0a6;
+  text-transform: uppercase;
+}

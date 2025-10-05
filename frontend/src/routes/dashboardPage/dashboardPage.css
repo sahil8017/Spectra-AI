@@ -1,0 +1,252 @@
+.learn-dashboard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 50px;
+  padding: 17vh 24px 24px;
+  /* Removed will-change to prevent unnecessary GPU layers */
+}
+
+.title-group {
+  text-align: center;
+}
+
+.page-title {
+  font-size: clamp(4rem, 9vw, 5rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Wrapper that syncs the subtitle and form */
+.synced-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px;
+}
+
+.form-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* --- Modern Input Component Styles --- */
+
+.modern-input-wrapper {
+  width: 100%;
+  max-width: 680px;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-container:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 20%, transparent);
+}
+
+/* Base styles for all buttons inside the input */
+.input-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: var(--bg-tertiary);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.input-button:hover {
+  background-color: var(--border-primary);
+  transform: scale(1.05);
+}
+
+.input-button:active {
+  transform: scale(0.95);
+}
+
+.input-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--text-secondary);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* Mode Switcher Button */
+.mode-switch-btn {
+  width: 48px;
+  height: 48px;
+  perspective: 1000px;
+  background-color: transparent;
+}
+
+.mode-switch-btn:hover { 
+  background-color: var(--bg-tertiary);
+  transform: scale(1);
+}
+
+.icon-flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.modern-input-wrapper.youtube .icon-flipper {
+  transform: rotateY(180deg);
+}
+
+.icon-flipper .input-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  backface-visibility: hidden;
+}
+
+.icon-flipper .icon-youtube {
+  transform: rotateY(180deg);
+  color: #ff0000;
+}
+
+/* Upload Button (+) */
+.upload-btn {
+  width: 48px;
+  height: 48px;
+  transform-origin: center;
+  transition: all 0.4s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.modern-input-wrapper.youtube .upload-btn {
+  transform: scale(0);
+  width: 0;
+  padding: 0;
+  margin-left: -8px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Animated Inputs Container */
+.input-fields-container {
+  flex-grow: 1;
+  position: relative;
+  height: 48px;
+  overflow: hidden;
+}
+
+.modern-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-family: 'Sora', sans-serif;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+              opacity 0.3s ease;
+}
+
+.modern-input::placeholder { 
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* The Sliding Animation */
+.modern-input-wrapper.question .modern-input[name="question"] { 
+  transform: translateY(0%); 
+  opacity: 1; 
+}
+
+.modern-input-wrapper.question .modern-input[name="youtube"] { 
+  transform: translateY(100%); 
+  opacity: 0; 
+}
+
+.modern-input-wrapper.youtube .modern-input[name="question"] { 
+  transform: translateY(-100%); 
+  opacity: 0; 
+}
+
+.modern-input-wrapper.youtube .modern-input[name="youtube"] { 
+  transform: translateY(0%); 
+  opacity: 1; 
+}
+
+/* Submit Button (Arrow) */
+.modern-submit-btn {
+  width: 48px;
+  height: 48px;
+  background-color: var(--accent-primary);
+}
+
+.modern-submit-btn .input-icon { 
+  color: white; 
+}
+
+html.dark .modern-submit-btn .input-icon { 
+  color: var(--text-primary); 
+}
+
+.modern-submit-btn:hover {
+  filter: brightness(1.1);
+  transform: scale(1.05);
+}
+
+.modern-submit-btn:active {
+  filter: brightness(0.9);
+  transform: scale(0.95);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .learn-dashboard {
+    padding: 12vh 16px 16px;
+    gap: 40px;
+  }
+  
+  .synced-content {
+    gap: 40px;
+  }
+  
+  .input-button {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .mode-switch-btn,
+  .upload-btn,
+  .modern-submit-btn {
+    width: 44px;
+    height: 44px;
+  }
+}

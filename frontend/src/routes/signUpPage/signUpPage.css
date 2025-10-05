@@ -1,0 +1,8 @@
+.signUpPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'arial', sans-serif;
+  padding: 10px;
+  overflow-y: auto; /* Added for consistency */
+}

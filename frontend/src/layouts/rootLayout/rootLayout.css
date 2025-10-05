@@ -1,0 +1,88 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.rootLayout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--bg-secondary);
+}
+
+/* ======================================= */
+/* HEADER                                  */
+/* ======================================= */
+.rootLayout header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  /* MODIFICATION: Synced header color with the page background */
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* --- Logo / Branding --- */
+.rootLayout header .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-family: 'Bukhari Script', cursive;
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.rootLayout header .logo img {
+  background-color: var(--bg-secondary);
+  /* MODIFICATION: Changed from 10px to 50% to create a perfect circle */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+/* --- User Area (Toggle + Clerk Button) --- */
+.rootLayout header .user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ======================================= */
+/* MAIN CONTENT AREA                       */
+/* ======================================= */
+.rootLayout main {
+  flex: 1;
+  overflow-y: auto;
+}
+
+
+/* ======================================= */
+/* CUSTOM SCROLLBAR                        */
+/* ======================================= */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--bg-tertiary);
+  border-radius: 20px;
+  border: 3px solid var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-primary);
+}

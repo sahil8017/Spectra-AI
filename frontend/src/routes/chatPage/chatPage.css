@@ -1,0 +1,252 @@
+:root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f7f7f8;
+      --bg-tertiary: #eef0f2;
+      --border-primary: #dde0e3;
+      --text-primary: #111111;
+      --text-secondary: #6c6f74;
+      --accent-primary: #007aff;
+    }
+
+    html.dark {
+      --bg-primary: #1c1c1e;
+      --bg-secondary: #121214;
+      --bg-tertiary: #2c2c2e;
+      --border-primary: #3a3a3c;
+      --text-primary: #ffffff;
+      --text-secondary: #8d8d92;
+      --accent-primary: #0a84ff;
+    }
+
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    /* Global styles */
+    html, body, #root {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    
+    /* Main app container */
+    .app-container {
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Chat component styles from the user prompt */
+    .chat-view {
+      height: 100%;
+      width: 100%;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      overflow: hidden;
+      background-color: var(--bg-secondary);
+    }
+.messages-area {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 50px 24px 24px 24px;
+      min-height: 100%;
+    }
+    
+    /* Ensure first message is always visible */
+    .messages-area::before {
+      content: '';
+      display: block;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .message {
+      padding: 12px 18px;
+      border-radius: 20px;
+      line-height: 1.5;
+      font-size: 15px;
+      width: fit-content;
+      max-width: 80%; /* Adjusted for better responsiveness */
+    }
+
+    /* Styling for pre-formatted text inside messages */
+    .message pre, .message code {
+        margin: 0;
+        padding: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: 'SF Mono', 'Consolas', 'Menlo', monospace; /* Monospaced font for code */
+        font-size: inherit;
+        color: inherit;
+    }
+
+    .message.ai {
+      align-self: flex-start;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      color: var(--text-primary);
+      border-top-left-radius: 4px;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: var(--accent-primary);
+      color: white;
+      border-top-right-radius: 4px;
+    }
+
+    html.dark .message.user {
+      color: var(--text-primary);
+    }
+
+    .chat-input-wrapper {
+      width: 100%;
+      padding: 12px 24px 24px 24px;  
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-primary);
+    }
+
+    .modern-input-wrapper {
+      width: 100%;
+      max-width: 850px;
+      margin: 0 auto;
+    }
+
+    .input-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 8px;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .input-container:focus-within {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 20%, transparent);
+    }
+
+    .input-button {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background-color: var(--bg-tertiary);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      width: 48px;
+      height: 48px;
+    }
+
+    .input-button:hover {
+      background-color: var(--border-primary);
+    }
+
+    .input-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--text-secondary);
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+
+    .mode-switch-btn {
+      perspective: 1000px;
+      background-color: transparent;
+    }
+
+    .mode-switch-btn:hover { background-color: var(--bg-tertiary); }
+
+    .icon-flipper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+    }
+
+    .modern-input-wrapper.youtube .icon-flipper {
+      transform: rotateY(180deg);
+    }
+
+    .icon-flipper .input-icon {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      backface-visibility: hidden;
+    }
+
+    .icon-flipper .icon-youtube {
+      transform: rotateY(180deg);
+      color: #ff0000;
+    }
+
+    .upload-btn {
+      transform-origin: center;
+    }
+
+    .modern-input-wrapper.youtube .upload-btn {
+      transform: scale(0);
+      width: 0;
+      padding: 0;
+      margin-left: -8px;
+      opacity: 0;
+    }
+
+    .input-fields-container {
+      flex-grow: 1;
+      position: relative;
+      /* Set initial height to match one line of text + padding */
+      height: 52px;
+      transition: height 0.2s ease-in-out;
+    }
+
+    .modern-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 14px 8px; /* Adjusted padding */
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 16px; /* Adjusted for better readability */
+      font-family: inherit;
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+      resize: none;
+      line-height: 1.4;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .modern-input::placeholder { color: var(--text-secondary); }
+    .modern-input-wrapper.question .modern-input[name="question"] { transform: translateY(0%); opacity: 1; z-index: 1;}
+    .modern-input-wrapper.question .modern-input[name="youtube"] { transform: translateY(100%); opacity: 0; pointer-events: none;}
+    .modern-input-wrapper.youtube .modern-input[name="question"] { transform: translateY(-100%); opacity: 0; pointer-events: none;}
+    .modern-input-wrapper.youtube .modern-input[name="youtube"] { transform: translateY(0%); opacity: 1; z-index: 1;}
+
+    .modern-submit-btn {
+      background-color: var(--accent-primary);
+    }
+
+    .modern-submit-btn .input-icon { color: white; }
+    html.dark .modern-submit-btn .input-icon { color: var(--text-primary); }
+    .modern-submit-btn:hover {
+      filter: brightness(1.1);
+    }
