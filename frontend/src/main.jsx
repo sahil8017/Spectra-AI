@@ -5,6 +5,8 @@ import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom"
 import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-react";
 import { ThemeProvider } from "./context/ThemeContext"; // Import ThemeProvider
 
+import "bootstrap/dist/css/bootstrap.min.css";
+
 // Import your layouts and pages
 import Homepage from "./routes/homepage/Homepage";
 import DashboardPage from "./routes/dashboardPage/DashboardPage";

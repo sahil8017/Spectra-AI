@@ -2,25 +2,24 @@
 
 import { motion } from "framer-motion";
 
+// Page-level transition - handles only opacity for smooth page changes
 const pageVariants = {
   initial: {
     opacity: 0,
-    y: 20, // Start slightly below
   },
   in: {
     opacity: 1,
-    y: 0, // Animate to original position
   },
   out: {
     opacity: 0,
-    y: -20, // Exit by moving slightly up
   },
 };
 
+// Fast, smooth fade transition
 const pageTransition = {
   type: "tween",
-  ease: "anticipate",
-  duration: 0.5,
+  ease: "easeInOut",
+  duration: 0.2,
 };
 
 const PageTransition = ({ children }) => {

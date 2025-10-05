@@ -14,24 +14,15 @@ const Icon = ({ path }) => (
   </svg>
 );
 
-const ExpandIcon = () => (
+const HamburgerIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M10 11L8 12.5L10 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M14 11L16 12.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
-const CollapseIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-    <path d="M11 15L8 12L11 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="15.25" y1="9" x2="15.25" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-  </svg>
-);
 
 // --- SIDEBAR COMPONENT ---
-const Sidebar = () => {
+const Sidebar = ({ closeSidebar }) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -49,9 +40,16 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <Link to="/" className="logo">
-          <img src="/logo.png" alt="logo" />
+        {/* --- ORDER SWAPPED HERE --- */}
+        {/* 1. Logo is now first */}
+        <Link to="/" className="logo-container">
+          <img src="/logo.png" alt="logo" className="logo-img" />
+          <span className="brand-label">spECTRA</span>
         </Link>
+        {/* 2. Button is now second */}
+        <button className="sidebar-toggle-button" onClick={closeSidebar}>
+          <HamburgerIcon />
+        </button>
       </div>
 
       <nav className="sidebar-nav">
@@ -83,13 +81,19 @@ const Sidebar = () => {
           </div>
         </div>
       </nav>
+      
+      <div className="sidebar-footer">
+          <UserButton afterSignOutUrl="/" />
+          <ThemeToggle />
+      </div>
     </aside>
   );
 };
 
+
 // --- DASHBOARD LAYOUT COMPONENT ---
 const DashboardLayout = () => {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false); // Start collapsed
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const { isSignedIn, isLoaded } = useAuth();
   const location = useLocation();
 
@@ -98,25 +102,18 @@ const DashboardLayout = () => {
 
   return (
     <div className={`dashboard-shell ${isSidebarExpanded ? "expanded" : "collapsed"}`}>
-      <Sidebar />
+      <Sidebar closeSidebar={() => setIsSidebarExpanded(false)} />
 
       <div className="content-wrapper">
-        <header className="top-bar">
-          <button 
-            className="sidebar-toggle" 
-            onClick={() => setIsSidebarExpanded((prev) => !prev)}
-            data-tooltip={isSidebarExpanded ? "Close sidebar" : "Open sidebar"}
-          >
-            {isSidebarExpanded ? <CollapseIcon /> : <ExpandIcon />}
-          </button>
-          
-          <Link to="/" className="brand-label">spECTRA</Link>
-          
-          <div className="top-bar-user">
-            <ThemeToggle />
-            <UserButton afterSignOutUrl="/" />
-          </div>
-        </header>
+        {!isSidebarExpanded && (
+            <button 
+              className="sidebar-open-button"
+              onClick={() => setIsSidebarExpanded(true)}
+              aria-label="Open sidebar"
+            >
+              <HamburgerIcon />
+            </button>
+        )}
 
         <main className="main-content">
           <AnimatePresence mode="wait">

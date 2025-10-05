@@ -7,7 +7,7 @@
   --transition-speed: 0.3s;
 }
 
-/* --- Sidebar (Animation Logic) --- */
+/* --- Sidebar Animation --- */
 .sidebar {
   position: fixed;
   top: 0;
@@ -16,119 +16,103 @@
   width: var(--sidebar-width);
   background-color: var(--bg-primary);
   border-right: 1px solid var(--border-primary);
-  z-index: 100;
+  z-index: 1000;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  transform: translateX(-100%);
+  transform: translateX(-100%); 
   transition: transform var(--transition-speed) ease-in-out;
-}
-
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 40px;
-  margin-bottom: 24px;
-}
-
-.sidebar-header .logo img {
-  width: 35px;
-  height: 35px;
-  object-fit: contain;
-  background-color: var(--bg-primary);
 }
 
 .dashboard-shell.expanded .sidebar {
   transform: translateX(0);
 }
 
-/* --- Content Wrapper (Animation Logic) --- */
 .content-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-}
-
-.dashboard-shell.expanded .content-wrapper {
-  margin-left: var(--sidebar-width);
-}
-
-/* --- Top Bar & Layout --- */
-.top-bar {
-  height: 64px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 0 24px;
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.main-content {
-  flex: 1; /* This is the key fix: it makes this area fill the remaining space */
-  padding: 0;
-  overflow: hidden; /* Changed from overflow-y: auto */
-}
-
-
-/* --- Other Component Styles --- */
-.brand-label {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  text-decoration: none;
-  margin-right: auto;
-}
-
-.sidebar-toggle {
   position: relative;
-  background: none;
-  border: 1px solid var(--border-primary);
+}
+
+/* --- Button Styles --- */
+.sidebar-open-button {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 101;
+  background: var(--bg-primary);
+  border: 0px solid var(--border-primary);
   color: var(--text-secondary);
-  cursor: pointer;
-  padding: 6px;
+  cursor:pointer;
+  padding: 8px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
-
-.sidebar-toggle:hover {
+.sidebar-open-button:hover {
   background-color: var(--hover-bg);
   color: var(--text-primary);
 }
 
-.sidebar-toggle::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: 120%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #111;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+.sidebar-toggle-button {
+  background: none;
+  border: 0px solid var(--border-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+.sidebar-toggle-button:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+/* --- Sidebar Header & Logo --- */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  /* THIS LINE POSITIONS THE ITEMS AT OPPOSITE ENDS */
+  justify-content: space-between; 
+  min-height: 40px;
+  margin-bottom: 24px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.logo-img {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
+}
+
+.brand-label {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
   white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease, top 0.2s ease;
 }
 
-.sidebar-toggle:hover::after {
-  opacity: 1;
-  top: 110%;
-}
 
-.top-bar-user { 
-  display: flex; 
-  align-items: center; 
-  gap: 16px; 
+/* --- Other Component Styles (Unchanged) --- */
+.main-content {
+  flex: 1;
+  padding: 0;
+  overflow: hidden;
 }
 
 .sidebar-nav { 
@@ -137,6 +121,15 @@
   overflow-x: hidden; 
   display: flex; 
   flex-direction: column; 
+}
+
+.sidebar-footer {
+  padding-top: 16px;
+  margin-top: auto;
+  border-top: 1px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .nav-text { 
@@ -172,10 +165,9 @@
   font-weight: 600;
 }
 
-/* AFTER */
 .new-chat {
   background-color: var(--accent-primary);
-  color: var(--text-primary); /* Changed from white */
+  color: var(--text-primary);
   font-weight: 600;
   margin-bottom: 16px;
   flex-shrink: 0;
@@ -184,13 +176,9 @@
 html.dark .new-chat {
   color: var(--text-primary);
 }
-
-/* AFTER */
 .new-chat:hover {
   filter: brightness(1.1);
-  /* The "color: white;" line has been removed */
 }
-
 html.dark .new-chat:hover {
   color: var(--text-primary);
 }

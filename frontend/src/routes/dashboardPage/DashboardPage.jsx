@@ -4,7 +4,7 @@ import { useUser } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 import "./dashboardPage.css";
 
-// Icon component (remains unchanged)
+// Icon component
 const ModernInputIcon = ({ type }) => {
   const paths = {
     switcher: "M13 10V3L4 14h7v7l9-11h-7z",
@@ -25,29 +25,37 @@ const DashboardPage = () => {
   const [inputMode, setInputMode] = useState('question');
   const { user } = useUser();
 
-  // --- NEW SEQUENTIAL ANIMATION LOGIC ---
-
-  // 1. A container variant to control the sequence of its children
+  // Container controls the sequence timing
   const containerVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 1 }, // Keep opacity at 1 since PageTransition handles fade
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.8, // This creates the delay between each item
+        staggerChildren: 0.15, // Faster stagger for snappier feel
+        delayChildren: 0.1, // Small delay to let page fade in first
       },
     },
   };
 
-  // 2. A single variant for all items that will slide up
+  // Items slide up with scale for a polished effect
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { 
+      opacity: 0, 
+      y: 30,
+      scale: 0.95
+    },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { type: "spring", stiffness: 100 },
+      scale: 1,
+      transition: { 
+        type: "spring", 
+        stiffness: 260,
+        damping: 20,
+        mass: 0.8
+      },
     },
   };
-
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -59,28 +67,23 @@ const DashboardPage = () => {
   };
 
   return (
-    // The main container now has only TWO direct children to animate in sequence
     <motion.div
       className="learn-dashboard"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {/* --- ITEM 1: The main title --- */}
+      {/* Title animates first */}
       <motion.h2 className="page-title" variants={itemVariants}>
         Hello, {user?.firstName || ''}
       </motion.h2>
 
-      {/* --- ITEM 2: A new wrapper for the subtitle AND the form --- */}
-      {/* This entire block will animate in together as the second step */}
+      {/* Subtitle and form animate together as second item */}
       <motion.div className="synced-content" variants={itemVariants}>
-        
-        {/* Subtitle is now a regular <p> tag */}
         <p className="page-subtitle">
           What do you want to learn?
         </p>
 
-        {/* Form container is now a regular <div> tag */}
         <div className="form-container">
           <form className={`modern-input-wrapper ${inputMode}`} onSubmit={onSubmit}>
             <div className="input-container">
