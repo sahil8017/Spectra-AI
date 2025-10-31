@@ -8,6 +8,7 @@ import {
     ChevronLeft, 
     ChevronRight 
 } from 'lucide-react';
+import PropTypes from 'prop-types';
 
 // Reusable NavItem component
 const NavItem = ({ icon, text, isExpanded, active }) => {
@@ -45,59 +46,51 @@ const NavItem = ({ icon, text, isExpanded, active }) => {
 };
 
 
-export default function Sidebar() {
-    const [isExpanded, setIsExpanded] = useState(true);
-
+export default function Sidebar({ isExpanded, onToggle, recentChats }) {
+    const [search, setSearch] = useState("");
+    const filteredChats = recentChats.filter(chat =>
+        chat.title.toLowerCase().includes(search.toLowerCase())
+    );
     return (
-        <aside className="h-screen">
+        <aside className={`sidebar${isExpanded ? ' expanded' : ' collapsed'}`}>
             <nav className="h-full flex flex-col bg-white border-r shadow-sm">
-                
-                {/* Top Section: Logo and Toggle */}
-                <div className="p-4 pb-2 flex justify-between items-center">
-                    <img 
-                        src="https://img.logoipsum.com/243.svg" // Replace with your logo
-                        className={`overflow-hidden transition-all ${isExpanded ? "w-32" : "w-0"}`} 
+                <div className="p-4 pb-2 flex justify-between items-center sidebar-header">
+                    <img
+                        src="https://img.logoipsum.com/243.svg"
+                        className={`overflow-hidden transition-all ${isExpanded ? "w-32" : "w-0"}`}
                         alt="logo"
                     />
-                    <button 
-                        onClick={() => setIsExpanded(curr => !curr)} 
-                        className="p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100"
+                    <button
+                        onClick={onToggle}
+                        className="p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 sidebar-toggle-button"
                     >
                         {isExpanded ? <ChevronLeft /> : <ChevronRight />}
                     </button>
                 </div>
-
-                {/* Main Navigation Items */}
-                <ul className="flex-1 px-3">
-                    <NavItem 
-                        icon={<MessageSquare size={20} />} 
-                        text="New Chat"
-                        isExpanded={isExpanded}
-                        active // Example of an active item
+                <div className="sidebar-search-chat">
+                    <Search size={20} />
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search chats"
+                        className="sidebar-text"
                     />
-                    <NavItem 
-                        icon={<Search size={20} />} 
-                        text="Search History"
-                        isExpanded={isExpanded}
-                    />
-                    <NavItem 
-                        icon={<LayoutDashboard size={20} />} 
-                        text="Dashboard"
-                        isExpanded={isExpanded}
-                    />
+                </div>
+                <ul className="flex-1 px-3 recent-chats-list">
+                    {filteredChats.map(chat => (
+                        <li key={chat.id}>
+                            <span className="nav-text">{chat.title}</span>
+                        </li>
+                    ))}
                 </ul>
-
-                {/* Bottom Section: Settings and Profile */}
-                <div className="border-t flex p-3">
-                    <img 
-                        src="https://ui-avatars.com/api/?background=c7d2fe&color=3730a3&bold=true&name=SA" // Sample Avatar
+                <div className="border-t flex p-3 sidebar-footer">
+                    <img
+                        src="https://ui-avatars.com/api/?background=c7d2fe&color=3730a3&bold=true&name=SA"
                         className="w-10 h-10 rounded-md"
                         alt="user avatar"
                     />
-                    <div className={`
-                        flex justify-between items-center
-                        overflow-hidden transition-all ${isExpanded ? "w-52 ml-3" : "w-0"}
-                    `}>
+                    <div className={`flex justify-between items-center overflow-hidden transition-all ${isExpanded ? "w-52 ml-3" : "w-0"}`}>
                         <div className="leading-4">
                             <h4 className="font-semibold">Sandeep</h4>
                             <span className="text-xs text-gray-600">sandeep@google.com</span>
@@ -105,8 +98,12 @@ export default function Sidebar() {
                         <Settings size={20} />
                     </div>
                 </div>
-
             </nav>
         </aside>
     );
 }
+Sidebar.propTypes = {
+    isExpanded: PropTypes.bool.isRequired,
+    onToggle: PropTypes.func.isRequired,
+    recentChats: PropTypes.array.isRequired,
+};

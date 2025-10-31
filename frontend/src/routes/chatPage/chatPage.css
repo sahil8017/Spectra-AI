@@ -1,252 +1,450 @@
-:root {
-      --bg-primary: #ffffff;
-      --bg-secondary: #f7f7f8;
-      --bg-tertiary: #eef0f2;
-      --border-primary: #dde0e3;
-      --text-primary: #111111;
-      --text-secondary: #6c6f74;
-      --accent-primary: #007aff;
-    }
+/* =============================================================================
+   💬 CHAT PAGE - BEAUTIFUL MESSAGING INTERFACE
+   Smooth, Interactive, Production-Ready
+   ============================================================================= */
 
-    html.dark {
-      --bg-primary: #1c1c1e;
-      --bg-secondary: #121214;
-      --bg-tertiary: #2c2c2e;
-      --border-primary: #3a3a3c;
-      --text-primary: #ffffff;
-      --text-secondary: #8d8d92;
-      --accent-primary: #0a84ff;
-    }
-
-    /* CSS Reset */
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
-    /* Global styles */
-    html, body, #root {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg-secondary);
-      color: var(--text-primary);
-    }
+/* =============================================================================
+   🎯 CHAT VIEW CONTAINER
+   ============================================================================= */
+   .chat-view {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    overflow: hidden;
+    background-color: var(--bg-secondary);
+  }
+  
+  /* =============================================================================
+     📜 MESSAGES AREA
+     ============================================================================= */
+  .messages-area {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-5xl) var(--spacing-2xl) var(--spacing-2xl);
     
-    /* Main app container */
-    .app-container {
-        height: 100vh;
-        width: 100vw;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    /* Chat component styles from the user prompt */
-    .chat-view {
-      height: 100%;
-      width: 100%;
-      display: grid;
-      grid-template-rows: 1fr auto;
-      overflow: hidden;
-      background-color: var(--bg-secondary);
-    }
-.messages-area {
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding: 50px 24px 24px 24px;
-      min-height: 100%;
-    }
-    
-    /* Ensure first message is always visible */
-    .messages-area::before {
-      content: '';
-      display: block;
-      height: 20px;
-      flex-shrink: 0;
-    }
-
-    .message {
-      padding: 12px 18px;
-      border-radius: 20px;
-      line-height: 1.5;
-      font-size: 15px;
-      width: fit-content;
-      max-width: 80%; /* Adjusted for better responsiveness */
-    }
-
-    /* Styling for pre-formatted text inside messages */
-    .message pre, .message code {
-        margin: 0;
-        padding: 0;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        font-family: 'SF Mono', 'Consolas', 'Menlo', monospace; /* Monospaced font for code */
-        font-size: inherit;
-        color: inherit;
-    }
-
-    .message.ai {
-      align-self: flex-start;
-      background: var(--bg-primary);
-      border: 1px solid var(--border-primary);
-      color: var(--text-primary);
-      border-top-left-radius: 4px;
-    }
-
-    .message.user {
-      align-self: flex-end;
-      background: var(--accent-primary);
-      color: white;
-      border-top-right-radius: 4px;
-    }
-
-    html.dark .message.user {
-      color: var(--text-primary);
-    }
-
-    .chat-input-wrapper {
-      width: 100%;
-      padding: 12px 24px 24px 24px;  
-      background: var(--bg-secondary);
-      border-top: 1px solid var(--border-primary);
-    }
-
-    .modern-input-wrapper {
-      width: 100%;
-      max-width: 850px;
-      margin: 0 auto;
-    }
-
-    .input-container {
-      display: flex;
-      align-items: flex-end;
-      gap: 8px;
-      padding: 8px;
-      background-color: var(--bg-primary);
-      border: 1px solid var(--border-primary);
-      border-radius: 24px;
-      transition: all 0.3s ease;
-    }
-
-    .input-container:focus-within {
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 20%, transparent);
-    }
-
-    .input-button {
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-      background-color: var(--bg-tertiary);
-      border-radius: 16px;
-      cursor: pointer;
-      transition: all 0.3s ease-in-out;
-      width: 48px;
-      height: 48px;
-    }
-
-    .input-button:hover {
-      background-color: var(--border-primary);
-    }
-
-    .input-icon {
-      width: 20px;
-      height: 20px;
-      color: var(--text-secondary);
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-    }
-
-    .mode-switch-btn {
-      perspective: 1000px;
-      background-color: transparent;
-    }
-
-    .mode-switch-btn:hover { background-color: var(--bg-tertiary); }
-
-    .icon-flipper {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transform-style: preserve-3d;
-      transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
-    }
-
-    .modern-input-wrapper.youtube .icon-flipper {
-      transform: rotateY(180deg);
-    }
-
-    .icon-flipper .input-icon {
-      position: absolute;
-      inset: 0;
-      margin: auto;
-      backface-visibility: hidden;
-    }
-
-    .icon-flipper .icon-youtube {
-      transform: rotateY(180deg);
-      color: #ff0000;
-    }
-
-    .upload-btn {
-      transform-origin: center;
-    }
-
-    .modern-input-wrapper.youtube .upload-btn {
-      transform: scale(0);
-      width: 0;
-      padding: 0;
-      margin-left: -8px;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) transparent;
+  }
+  
+  .messages-area::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .messages-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .messages-area::-webkit-scrollbar-thumb {
+    background-color: var(--border-primary);
+    border-radius: var(--radius-pill);
+    transition: background-color var(--transition-fast);
+  }
+  
+  .messages-area::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-secondary);
+  }
+  
+  /* Add top spacing for first message */
+  .messages-area::before {
+    content: "";
+    display: block;
+    height: var(--spacing-xl);
+    flex-shrink: 0;
+  }
+  
+  /* =============================================================================
+     💭 MESSAGE BUBBLES
+     ============================================================================= */
+  .message {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-radius: var(--radius-xl);
+    line-height: 1.6;
+    font-size: 15px;
+    width: fit-content;
+    max-width: 75%;
+    position: relative;
+    animation: messageSlideIn var(--transition-normal) var(--ease-decelerate);
+    will-change: transform, opacity;
+  }
+  
+  @keyframes messageSlideIn {
+    from {
       opacity: 0;
+      transform: translateY(16px);
     }
-
-    .input-fields-container {
-      flex-grow: 1;
-      position: relative;
-      /* Set initial height to match one line of text + padding */
-      height: 52px;
-      transition: height 0.2s ease-in-out;
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
-
+  }
+  
+  /* Code formatting inside messages */
+  .message pre,
+  .message code {
+    margin: 0;
+    padding: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: var(--font-mono);
+    font-size: inherit;
+    color: inherit;
+  }
+  
+  /* AI Message Style */
+  .message.ai {
+    align-self: flex-start;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
+    border-top-left-radius: var(--radius-xs);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  /* User Message Style */
+  .message.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
+    color: white;
+    border-top-right-radius: var(--radius-xs);
+    box-shadow: var(--shadow-md);
+  }
+  
+  html.dark .message.user {
+    color: var(--text-primary);
+  }
+  
+  /* Message hover effect */
+  .message:hover {
+    transform: translateY(-1px);
+    transition: transform var(--transition-fast) var(--ease-standard);
+  }
+  
+  .message.ai:hover {
+    box-shadow: var(--shadow-md);
+  }
+  
+  .message.user:hover {
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* =============================================================================
+     ✏️ CHAT INPUT WRAPPER
+     ============================================================================= */
+  .chat-input-wrapper {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-2xl) var(--spacing-2xl);
+    background: linear-gradient(to top, var(--bg-secondary) 0%, transparent 100%);
+    border-top: 1px solid var(--border-primary);
+    backdrop-filter: blur(12px);
+  }
+  
+  .modern-input-wrapper {
+    width: 100%;
+    max-width: 600px;
+    min-width: 300px;
+    margin: 0 auto;
+  }
+  
+  /* =============================================================================
+     🎨 INPUT CONTAINER
+     ============================================================================= */
+  .input-container {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background-color: var(--bg-elevated);
+    border: 2px solid var(--border-primary);
+    border-radius: var(--radius-2xl);
+    transition: all var(--transition-normal) var(--ease-standard);
+    min-height: 64px;
+    height: auto;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    max-width: 600px;
+  }
+  
+  .input-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent-light) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    pointer-events: none;
+  }
+  
+  .input-container:focus-within::before {
+    opacity: 1;
+  }
+  
+  .input-container:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px var(--accent-light), var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+  
+  /* =============================================================================
+     🎯 INPUT BUTTONS
+     ============================================================================= */
+  .input-button {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast) var(--ease-spring);
+    user-select: none;
+    width: 48px;
+    height: 48px;
+    position: relative;
+    z-index: 1;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .input-button::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    z-index: -1;
+  }
+  
+  .input-button:hover::before {
+    opacity: 0.1;
+  }
+  
+  .input-button:hover {
+    background-color: var(--hover-lift);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .input-button:active {
+    transform: translateY(0) scale(0.98);
+    transition-duration: var(--transition-fast);
+  }
+  
+  .input-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text-secondary);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    transition: all var(--transition-fast);
+  }
+  
+  .input-button:hover .input-icon {
+    color: var(--text-primary);
+    transform: scale(1.1);
+  }
+  
+  /* Upload Button */
+  .upload-btn {
+    /* Inherits from .input-button */
+  }
+  
+  /* =============================================================================
+     📝 TEXT INPUT FIELD
+     ============================================================================= */
+  .input-fields-container {
+    flex-grow: 1;
+    position: relative;
+    height: auto;
+    min-height: 48px;
+    display: flex;
+  }
+  
+  .modern-input {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 48px;
+    max-height: 200px;
+    padding: var(--spacing-md) var(--spacing-sm);
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-family: var(--font-primary);
+    resize: none;
+    line-height: 1.5;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1;
+    
+    /* Custom Scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) transparent;
+  }
+  
+  .modern-input::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .modern-input::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .modern-input::-webkit-scrollbar-thumb {
+    background-color: var(--border-primary);
+    border-radius: var(--radius-pill);
+  }
+  
+  .modern-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+    transition: opacity var(--transition-fast);
+  }
+  
+  .modern-input:focus::placeholder {
+    opacity: 0.5;
+  }
+  
+  /* =============================================================================
+     ✨ SUBMIT BUTTON
+     ============================================================================= */
+  .modern-submit-btn {
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
+    box-shadow: 0 4px 12px rgba(33, 123, 254, 0.3);
+  }
+  
+  .modern-submit-btn .input-icon {
+    color: white;
+  }
+  
+  html.dark .modern-submit-btn .input-icon {
+    color: var(--text-primary);
+  }
+  
+  .modern-submit-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px) scale(1.08) rotate(-3deg);
+    box-shadow: 0 6px 20px rgba(33, 123, 254, 0.4);
+  }
+  
+  .modern-submit-btn:active {
+    filter: brightness(0.95);
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  
+  .modern-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+  }
+  
+  /* =============================================================================
+     📱 RESPONSIVE DESIGN
+     ============================================================================= */
+  
+  /* Tablet (1024px and below) */
+  @media (max-width: 1024px) {
+    .message {
+      max-width: 85%;
+    }
+  }
+  
+  /* Mobile (768px and below) */
+  @media (max-width: 768px) {
+    .messages-area {
+      padding: var(--spacing-4xl) var(--spacing-lg) var(--spacing-lg);
+      gap: var(--spacing-lg);
+    }
+    
+    .message {
+      max-width: 90%;
+      padding: var(--spacing-md) var(--spacing-lg);
+      font-size: 14px;
+    }
+    
+    .chat-input-wrapper {
+      padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-lg);
+    }
+    
+    .input-container {
+      min-height: 56px;
+      padding: var(--spacing-xs);
+    }
+    
+    .input-button {
+      width: 44px;
+      height: 44px;
+    }
+  }
+  
+  /* Small Mobile (480px and below) */
+  @media (max-width: 480px) {
+    .message {
+      font-size: 14px;
+      max-width: 95%;
+    }
+    
     .modern-input {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      padding: 14px 8px; /* Adjusted padding */
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text-primary);
-      font-size: 16px; /* Adjusted for better readability */
-      font-family: inherit;
-      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
-      resize: none;
-      line-height: 1.4;
-      max-height: 200px;
-      overflow-y: auto;
+      font-size: 16px; /* Prevents zoom on iOS */
     }
-
-    .modern-input::placeholder { color: var(--text-secondary); }
-    .modern-input-wrapper.question .modern-input[name="question"] { transform: translateY(0%); opacity: 1; z-index: 1;}
-    .modern-input-wrapper.question .modern-input[name="youtube"] { transform: translateY(100%); opacity: 0; pointer-events: none;}
-    .modern-input-wrapper.youtube .modern-input[name="question"] { transform: translateY(-100%); opacity: 0; pointer-events: none;}
-    .modern-input-wrapper.youtube .modern-input[name="youtube"] { transform: translateY(0%); opacity: 1; z-index: 1;}
-
-    .modern-submit-btn {
-      background-color: var(--accent-primary);
-    }
-
-    .modern-submit-btn .input-icon { color: white; }
-    html.dark .modern-submit-btn .input-icon { color: var(--text-primary); }
-    .modern-submit-btn:hover {
-      filter: brightness(1.1);
-    }
+  }
+  
+  /* =============================================================================
+     ♿ ACCESSIBILITY
+     ============================================================================= */
+  .input-button:focus-visible {
+    outline: 3px solid var(--accent-primary);
+    outline-offset: 3px;
+  }
+  
+  .modern-input:focus-visible {
+    outline: none; /* Parent container handles focus */
+  }
+  
+  /* =============================================================================
+     🎨 LOADING STATE
+     ============================================================================= */
+  .message.loading {
+    opacity: 0.7;
+    animation: pulseMessage 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes pulseMessage {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 0.4; }
+  }
+  
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: var(--spacing-md);
+  }
+  
+  .typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background-color: var(--text-secondary);
+    border-radius: 50%;
+    animation: typingDot 1.4s infinite ease-in-out;
+  }
+  
+  .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  
+  @keyframes typingDot {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-10px); opacity: 1; }
+  }

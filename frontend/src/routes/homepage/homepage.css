@@ -141,10 +141,8 @@
   background-image: url("/bg.png");
   background-size: auto 100%;
   opacity: 0.1;
-  /* ✨ UPDATED: A custom cubic-bezier for a more natural sine-wave-like motion */
-  animation: 8s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite alternate slideBg;
+  animation: 5s ease-in-out infinite alternate slideBg;
 }
-
 
 .homepage .bot {
   width: 100%;
@@ -154,11 +152,8 @@
   left: 50%;
   transform: translate(-50%, -50%);
   object-fit: contain;
-  /* ✨ UPDATED: Using a smoother bezier curve and hinting to the browser for optimization */
-  animation: 4s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite alternate botAnimate;
-  will-change: transform; /* Performance hint for the browser */
+  animation: 2s ease-in-out infinite alternate botAnimate;
 }
-
 
 .homepage .chat {
   display: flex;
@@ -174,7 +169,7 @@
   background-color: var(--bg-primary);
   box-shadow: 0 4px 12px rgba(100, 100, 100, 0.08);
   opacity: 0;
-  animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 1s forwards; /* ✨ UPDATED: Using new easing */
+  animation: fadeInUp 0.4s ease 0.6s forwards;
 }
 
 
@@ -197,13 +192,15 @@
 /* --- Decorative Elements --- */
 .homepage .orbital {
   position: absolute;
-  bottom: -50px;
-  left: -50px;
-  z-index: 0;
+  z-index: 0 !important;
+  pointer-events: none;
   width: 100vw;
   max-width: 600px;
   opacity: 100%;
-  animation: 100s linear infinite rotateOrbital;
+  bottom: -50px;
+  left: -50px;
+  animation: rotateOrbital 30s linear infinite;
+  transform-origin: center;
 }
 
 
@@ -253,8 +250,7 @@
 /* ENTRANCE ANIMATIONS                     */
 /* ======================================= */
 .homepage .brand {
-  /* ✨ UPDATED: Using new easing */
-  animation: fadeInUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: fadeInUp 1.2s ease forwards;
 }
 
 .homepage .tagline,
@@ -295,13 +291,8 @@
 }
 
 @keyframes botAnimate {
-  from {
-    transform: translate(-50%, -50%) scale(1) rotate(0deg);
-  }
-  /* ✨ UPDATED: Added a subtle vertical movement for a more 'floaty' feel */
-  to {
-    transform: translate(-50%, -52%) scale(1.05) rotate(-5deg);
-  }
+  from { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  to { transform: translate(-50%, -50%) scale(1.05) rotate(-5deg); }
 }
 
 @keyframes slideBg {

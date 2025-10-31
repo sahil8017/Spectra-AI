@@ -1,215 +1,264 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './chatPage.css';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  useParams,
+  useLocation,
+  useNavigate,
+  useOutletContext,
+} from "react-router-dom";
+import "./chatPage.css";
 
-// SVG Icon component (No changes needed here)
+// The base URL of your Flask API
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:5000";
+
+// Regex to detect YouTube URLs
+const YOUTUBE_URL_REGEX =
+  /(https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11})/;
+// Also support raw 11-char video IDs (e.g., "UQOTNkq0X48")
+const YOUTUBE_ID_REGEX = /^[A-Za-z0-9_-]{11}$/;
+
+// SVG Icon component
 const ModernInputIcon = ({ type }) => {
-    const paths = {
-      switcher: "M13 10V3L4 14h7v7l9-11h-7z",
-      youtube: "M12.2,12.4c-0.6,0-1,0.5-1,1s0.5,1,1,1s1-0.5,1-1S12.7,12.4,12.2,12.4z M17.9,12.1c-0.2-0.8-0.9-1.5-1.7-1.7 c-1.5-0.4-3.9-0.4-5.4,0C10,10.6,9.3,11.3,9.1,12.1c-0.2,1.2-0.2,3.7,0,4.9c0.2,0.8,0.9,1.5,1.7,1.7c1.5,0.4,3.9,0.4,5.4,0 c0.8-0.2,1.5-0.9,1.7-1.7C18.1,15.8,18.1,13.3,17.9,12.1z",
-      upload: "M12 5v14m-7-7h14",
-      submit: "M5 12h14M12 5l7 7-7 7",
-    };
-    const path = paths[type];
-    return (
-      <svg viewBox="0 0 24 24" className={`input-icon icon-${type}`} strokeLinecap="round" strokeLinejoin="round">
-        <path d={path} />
-      </svg>
-    );
+  const paths = {
+    upload: "M12 5v14m-7-7h14",
+    submit: "M5 12h14M12 5l7 7-7 7",
+  };
+  const path = paths[type];
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={`input-icon icon-${type}`}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d={path} />
+    </svg>
+  );
 };
 
 // Main Chat Page Component
 const ChatPage = () => {
-    const [messages, setMessages] = useState([]);
-    const [inputMode, setInputMode] = useState('question');
-    const messagesEndRef = useRef(null);
-    const formRef = useRef(null);
-    // NEW: Create a ref for the hidden file input
-    const fileInputRef = useRef(null);
+  const [messages, setMessages] = useState([]);
+  const messagesEndRef = useRef(null);
+  const formRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
 
-    const initialCodeSnippet = `import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import './chatPage.css';
+  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { handleCreateChat } = useOutletContext(); // Still needed for new file uploads
 
-// Icon component (no changes needed here)
-const ModernInputIcon = ({ type }) => {
-    // ...
-};`;
-
-    const scrollToBottom = () => {
-        setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-        }, 0);
-    };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
-    useEffect(() => {
-        setMessages([
-            { id: 1, role: 'ai', text: 'Hi! I`m your learning co-pilot. How can I help you today?' },
-            { id: 2, role: 'user', text: 'Can you show me what some code looks like in here?' },
-            { id: 3, role: 'ai', text: 'Of course! Here is a sample React component. Notice how the formatting is preserved.' },
-            { id: 4, role: 'user', text: initialCodeSnippet }
-        ]);
-    }, []);
-
-    const handleSendMessage = (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const messageText = (formData.get(inputMode) || "").toString().trim();
-        
-        if (!messageText) return;
-
-        const userMessage = { id: Date.now(), role: 'user', text: messageText };
-        const aiResponse = { id: Date.now() + 1, role: 'ai', text: 'Thinking...' };
-        
-        setMessages(prevMessages => [...prevMessages, userMessage, aiResponse]);
-        
-        formRef.current.reset();
-        const textareas = formRef.current.querySelectorAll('.modern-input');
-        textareas.forEach(textarea => {
-            textarea.style.height = 'auto';
-            if (textarea.parentElement) {
-                textarea.parentElement.style.height = '52px';
-            }
-        });
-
-        setTimeout(() => {
-            setMessages(prev => prev.map(msg => 
-                msg.id === aiResponse.id ? {...msg, text: "That's an interesting question! I'm processing it now."} : msg
-            ));
-        }, 1500);
-    };
-
-    const handleInputResize = (e) => {
-        const textarea = e.target;
-        textarea.style.height = 'auto';
-        const newHeight = `${textarea.scrollHeight}px`;
-        textarea.style.height = newHeight;
-
-        if (textarea.parentElement) {
-            textarea.parentElement.style.height = newHeight;
-        }
-    };
-
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            formRef.current.requestSubmit();
-        }
-    };
-    
-    // NEW: Handler for the '+' button click
-    const handleUploadClick = () => {
-        fileInputRef.current.click();
-    };
-
-    // NEW: Handler for when a file is selected
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            // You can now handle the file upload logic
-            console.log('File selected:', file.name);
-            // Example: Add a message to the chat indicating a file was selected
-            const fileMessage = { id: Date.now(), role: 'user', text: `You selected the file: ${file.name}` };
-            setMessages(prev => [...prev, fileMessage]);
-        }
-    };
-
-    return (
-        <div className="chat-view">
-            <div className="messages-area">
-                {messages.map((msg) => (
-                    <div key={msg.id} className={`message ${msg.role}`}>
-                        <pre><code>{msg.text}</code></pre>
-                    </div>
-                ))}
-                <div ref={messagesEndRef} />
-            </div>
-
-            <div className="chat-input-wrapper">
-                <form ref={formRef} className={`modern-input-wrapper ${inputMode}`} onSubmit={handleSendMessage}>
-                    {/* NEW: Hidden file input element */}
-                    <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        onChange={handleFileChange}
-                        style={{ display: 'none' }} 
-                        aria-hidden="true"
-                    />
-
-                    <div className="input-container">
-                        <button
-                            type="button"
-                            className="input-button mode-switch-btn"
-                            onClick={() => setInputMode(prev => prev === 'question' ? 'youtube' : 'question')}
-                            aria-label="Switch input mode"
-                        >
-                            <div className="icon-flipper">
-                                <ModernInputIcon type="switcher" />
-                                <ModernInputIcon type="youtube" />
-                            </div>
-                        </button>
-
-                        {/* UPDATED: The '+' button now triggers the file input */}
-                        <button 
-                            type="button" 
-                            className="input-button upload-btn" 
-                            aria-label="Upload file"
-                            onClick={handleUploadClick}
-                        >
-                            <ModernInputIcon type="upload" />
-                        </button>
-
-                        <div className="input-fields-container">
-                            <textarea
-                                className="modern-input"
-                                name="question"
-                                placeholder="Ask anything..."
-                                autoComplete="off"
-                                rows="1"
-                                onInput={handleInputResize}
-                                onKeyDown={handleKeyDown}
-                            />
-                            <textarea
-                                className="modern-input"
-                                name="youtube"
-                                placeholder="Paste a YouTube video link..."
-                                autoComplete="off"
-                                rows="1"
-                                onInput={handleInputResize}
-                                onKeyDown={handleKeyDown}
-                            />
-                        </div>
-
-                        <button type="submit" className="input-button modern-submit-btn" aria-label="Submit">
-                            <ModernInputIcon type="submit" />
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+  // Helper function to update the "Thinking..." message
+  const updateLastMessage = (text) => {
+    setMessages((prev) =>
+      prev.map((msg, index) =>
+        index === prev.length - 1 ? { ...msg, text: text } : msg
+      )
     );
-};
+  };
 
-// The rest of your file remains unchanged...
+  const fetchResponse = useCallback(async (prompt, mode, file = null) => {
+    const userMessage = { id: crypto.randomUUID(), role: "user", text: prompt };
+    const aiResponse = {
+      id: crypto.randomUUID(),
+      role: "ai",
+      text: "Thinking...",
+    };
+    setMessages((prev) => [...prev, userMessage, aiResponse]);
 
-const ChatStyles = () => ( <style>{`...`}</style>);
+    try {
+      let response;
+      if (mode === "document" && file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        response = await fetch(`${API_BASE_URL}/api/summarize-document`, {
+          method: "POST",
+          body: formData,
+        });
+      } else if (mode === "youtube") {
+        let youtubeUrl = null;
+        const urlMatch = prompt.match(YOUTUBE_URL_REGEX);
+        if (urlMatch) {
+          youtubeUrl = urlMatch[0];
+        } else if (YOUTUBE_ID_REGEX.test(prompt)) {
+          // Accept bare IDs by converting to short URL
+          youtubeUrl = `https://youtu.be/${prompt}`;
+        } else {
+          throw new Error("Couldn't detect a valid YouTube URL or ID in your message.");
+        }
+        const userPrompt = prompt.replace(youtubeUrl, "").trim();
 
-export default function App() {
-  useEffect(() => {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (prefersDark) {
-      document.documentElement.classList.add('dark');
+        response = await fetch(`${API_BASE_URL}/api/summarize-youtube`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            youtube_url: youtubeUrl,
+            prompt: userPrompt,
+          }),
+        });
+      } else {
+        response = await fetch(`${API_BASE_URL}/api/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: prompt }),
+        });
+      }
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "An unknown API error occurred.");
+      }
+
+      const data = await response.json();
+      if (data && typeof data.summary === "string" && data.summary.length > 0) {
+        updateLastMessage(data.summary);
+      } else if (data && data.error) {
+        throw new Error(data.error);
+      } else {
+        throw new Error("Unexpected response format from the server.");
+      }
+    } catch (error) {
+      console.error("API call failed:", error);
+      updateLastMessage(`Sorry, an error occurred: ${error.message}`);
     }
   }, []);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    const { firstPrompt, mode, file } = location.state || {};
+    if (firstPrompt) {
+      setMessages([]); // always start empty, actual fetchResponse will append messages
+      fetchResponse(firstPrompt, mode, file);
+      navigate(location.pathname, { replace: true, state: {} });
+    } else {
+      setMessages([]); // never show the fake welcome message
+    }
+  }, [id, location.state, navigate, location.pathname, fetchResponse]);
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const prompt = (formData.get("prompt") || "").toString().trim();
+
+    if (!prompt) return;
+
+    const hasYouTubeLink = YOUTUBE_URL_REGEX.test(prompt);
+    const mode = hasYouTubeLink ? "youtube" : "question";
+
+    fetchResponse(prompt, mode);
+
+    formRef.current.reset();
+    textareaRef.current.style.height = "auto";
+    const container = formRef.current.querySelector(".input-container");
+    if (container) {
+      container.style.height = "auto";
+    }
+  };
+
+  const handleInputResize = (e) => {
+    const textarea = e.target;
+    textarea.style.height = "auto";
+    const newHeight = `${textarea.scrollHeight}px`;
+    textarea.style.height = newHeight;
+    if (formRef.current) {
+      const container = formRef.current.querySelector(".input-container");
+      if (container) {
+        container.style.height = "auto";
+      }
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      formRef.current.requestSubmit();
+    }
+  };
+
+  // --- THIS FUNCTION IS MODIFIED ---
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // This now adds the document to the CURRENT chat
+      // instead of creating a new one.
+      fetchResponse(file.name, "document", file);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
   return (
-    <>
-      <div className="app-container">
-        <ChatPage />
+    <div className="chat-view">
+      <div className="messages-area">
+        {messages.map((msg) => (
+          <div key={msg.id} className={`message ${msg.role}`}>
+            <pre>
+              <code>{msg.text}</code>
+            </pre>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
       </div>
-    </>
+
+      <div className="chat-input-wrapper">
+        <form
+          ref={formRef}
+          className="modern-input-wrapper"
+          onSubmit={handleSendMessage}
+        >
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+            aria-hidden="true"
+            accept=".pdf,.docx"
+          />
+
+          <div className="input-container">
+            <button
+              type="button"
+              className="input-button upload-btn"
+              aria-label="Upload file"
+              onClick={handleUploadClick}
+            >
+              <ModernInputIcon type="upload" />
+            </button>
+
+            <div className="input-fields-container">
+              <textarea
+                ref={textareaRef}
+                className="modern-input"
+                name="prompt"
+                placeholder="Ask anything, or paste a YouTube link..."
+                autoComplete="off"
+                rows="1"
+                onInput={handleInputResize}
+                onKeyDown={handleKeyDown}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="input-button modern-submit-btn"
+              aria-label="Submit"
+            >
+              <ModernInputIcon type="submit" />
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
-}
+};
+
+export default ChatPage;

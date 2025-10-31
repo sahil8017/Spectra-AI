@@ -1,21 +1,302 @@
-.theme-toggle-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-primary);
-  transition: background-color 0.1s ease;
-}
+/* =============================================================================
+   🌙 THEME TOGGLE - SMOOTH DARK MODE SWITCH
+   Beautiful, Interactive, Production-Ready
+   ============================================================================= */
 
-.theme-toggle-button:hover {
-  background-color: var(--hover-bg);
-}
-
-.theme-toggle-button svg {
-  width: 20px;
-  height: 20px;
-}
+/* =============================================================================
+   🎯 THEME TOGGLE BUTTON
+   ============================================================================= */
+   .theme-toggle-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    transition: all var(--transition-fast) var(--ease-standard);
+    position: relative;
+    overflow: hidden;
+    width: 40px;
+    height: 40px;
+  }
+  
+  /* Hover background effect */
+  .theme-toggle-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--hover-bg);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    z-index: 0;
+  }
+  
+  .theme-toggle-button:hover::before {
+    opacity: 1;
+  }
+  
+  /* Icon styling */
+  .theme-toggle-button svg {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    z-index: 1;
+    transition: transform var(--transition-normal) var(--ease-spring);
+  }
+  
+  /* =============================================================================
+     ✨ HOVER & ACTIVE STATES
+     ============================================================================= */
+  .theme-toggle-button:hover {
+    transform: scale(1.1) rotate(15deg);
+  }
+  
+  .theme-toggle-button:hover svg {
+    transform: rotate(180deg);
+  }
+  
+  .theme-toggle-button:active {
+    transform: scale(0.95) rotate(0deg);
+    transition-duration: var(--transition-fast);
+  }
+  
+  /* =============================================================================
+     🎨 ICON ANIMATIONS
+     ============================================================================= */
+  
+  /* Sun icon (light mode) */
+  .theme-toggle-button .sun-icon {
+    animation: sunRise 0.5s var(--ease-decelerate);
+  }
+  
+  @keyframes sunRise {
+    from {
+      transform: rotate(-90deg) scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: rotate(0deg) scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* Moon icon (dark mode) */
+  .theme-toggle-button .moon-icon {
+    animation: moonRise 0.5s var(--ease-decelerate);
+  }
+  
+  @keyframes moonRise {
+    from {
+      transform: rotate(90deg) scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: rotate(0deg) scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* =============================================================================
+     🌟 ADVANCED EFFECTS
+     ============================================================================= */
+  
+  /* Glow effect on hover */
+  .theme-toggle-button:hover {
+    box-shadow: 0 0 20px var(--accent-light);
+  }
+  
+  /* Light mode specific glow */
+  html:not(.dark) .theme-toggle-button:hover {
+    box-shadow: 0 0 20px rgba(255, 200, 0, 0.3);
+  }
+  
+  /* Dark mode specific glow */
+  html.dark .theme-toggle-button:hover {
+    box-shadow: 0 0 20px rgba(100, 150, 255, 0.3);
+  }
+  
+  /* Pulse animation when theme changes */
+  .theme-toggle-button.changing {
+    animation: themePulse 0.6s var(--ease-spring);
+  }
+  
+  @keyframes themePulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2) rotate(180deg);
+    }
+  }
+  
+  /* =============================================================================
+     ♿ ACCESSIBILITY
+     ============================================================================= */
+  .theme-toggle-button:focus-visible {
+    outline: 3px solid var(--accent-primary);
+    outline-offset: 3px;
+    border-radius: var(--radius-md);
+  }
+  
+  /* Screen reader text */
+  .theme-toggle-button .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  
+  /* =============================================================================
+     📱 RESPONSIVE DESIGN
+     ============================================================================= */
+  
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .theme-toggle-button {
+      width: 44px;
+      height: 44px;
+      padding: var(--spacing-sm);
+    }
+    
+    .theme-toggle-button svg {
+      width: 22px;
+      height: 22px;
+    }
+  }
+  
+  /* Small mobile */
+  @media (max-width: 480px) {
+    .theme-toggle-button {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .theme-toggle-button svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  /* =============================================================================
+     🎨 THEME TRANSITION EFFECTS
+     ============================================================================= */
+  
+  /* Smooth theme transition for entire page */
+  html {
+    transition: background-color var(--transition-normal) var(--ease-standard),
+                color var(--transition-normal) var(--ease-standard);
+  }
+  
+  /* Prevent transition on page load */
+  html.no-transition,
+  html.no-transition * {
+    transition: none !important;
+  }
+  
+  /* =============================================================================
+     ♿ REDUCED MOTION SUPPORT
+     ============================================================================= */
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle-button,
+    .theme-toggle-button svg,
+    .theme-toggle-button::before {
+      transition: none !important;
+      animation: none !important;
+    }
+    
+    .theme-toggle-button:hover {
+      transform: none;
+    }
+  }
+  
+  /* =============================================================================
+     🎨 ALTERNATIVE DESIGNS (Optional)
+     ============================================================================= */
+  
+  /* Rounded pill style */
+  .theme-toggle-button.pill-style {
+    border-radius: var(--radius-pill);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    width: auto;
+    gap: var(--spacing-sm);
+  }
+  
+  .theme-toggle-button.pill-style::after {
+    content: attr(data-theme);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  /* Toggle switch style */
+  .theme-toggle-switch {
+    width: 60px;
+    height: 32px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-pill);
+    position: relative;
+    cursor: pointer;
+    transition: background-color var(--transition-normal);
+    border: 2px solid var(--border-primary);
+  }
+  
+  .theme-toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    transition: transform var(--transition-normal) var(--ease-spring);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  html.dark .theme-toggle-switch::after {
+    transform: translateX(28px);
+    background: var(--text-primary);
+  }
+  
+  .theme-toggle-switch:hover {
+    background: var(--hover-bg);
+    border-color: var(--accent-primary);
+  }
+  
+  /* Icon inside toggle */
+  .theme-toggle-switch svg {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: opacity var(--transition-fast);
+  }
+  
+  .theme-toggle-switch .sun-icon {
+    left: 8px;
+    opacity: 1;
+  }
+  
+  .theme-toggle-switch .moon-icon {
+    right: 8px;
+    opacity: 0.3;
+  }
+  
+  html.dark .theme-toggle-switch .sun-icon {
+    opacity: 0.3;
+  }
+  
+  html.dark .theme-toggle-switch .moon-icon {
+    opacity: 1;
+  }

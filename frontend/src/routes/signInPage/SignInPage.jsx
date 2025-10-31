@@ -1,7 +1,7 @@
-// src/routes/signInPage/SignInPage.jsx (UPDATED)
+// src/routes/signInPage/SignInPage.jsx
 
 import { SignIn } from "@clerk/clerk-react";
-// import "./signInPage.css"; <-- DELETE THIS LINE
+import "./signInPage.css"; // ✅ Added back this line
 import { useContext } from "react";
 import { ThemeContext } from "../../context/ThemeContext";
 import { dark } from "@clerk/themes";
@@ -11,21 +11,18 @@ const SignInPage = () => {
   const hasClerk = Boolean(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
 
   if (!hasClerk) {
-    // You can also style this fallback state with Bootstrap
-    return <div className="d-flex justify-content-center align-items-center vh-100">Authentication is not configured.</div>;
+    return <div className="signInPage">Authentication is not configured.</div>;
   }
 
   return (
-    // Use Bootstrap utility classes for layout
-    // vh-100 makes the div take up the full viewport height
-    <div className="d-flex justify-content-center align-items-center vh-100">
+    <div className="signInPage">
       <SignIn
         path="/sign-in"
         routing="path"
         signUpUrl="/sign-up"
         afterSignInUrl="/dashboard"
         appearance={{
-          baseTheme: theme === 'dark' ? dark : undefined,
+          baseTheme: theme === "dark" ? dark : undefined,
         }}
       />
     </div>

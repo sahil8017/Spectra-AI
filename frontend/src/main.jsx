@@ -3,11 +3,12 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-react";
-import { ThemeProvider } from "./context/ThemeContext"; // Import ThemeProvider
+import { ThemeProvider } from "./context/ThemeContext";
 
-import "bootstrap/dist/css/bootstrap.min.css";
+// We don't need the bootstrap CSS import as you're using custom styles
+// import "bootstrap/dist/css/bootstrap.min.css"; 
 
-// Import your layouts and pages
+// --- Import Layouts and Pages ---
 import Homepage from "./routes/homepage/Homepage";
 import DashboardPage from "./routes/dashboardPage/DashboardPage";
 import ChatPage from "./routes/chatPage/chatPage";
@@ -15,25 +16,27 @@ import RootLayout from "./layouts/rootLayout/RootLayout";
 import DashboardLayout from "./layouts/dashboardLayout/DashboardLayout";
 import SignInPage from "./routes/signInPage/SignInPage";
 import SignUpPage from "./routes/signUpPage/SignUpPage";
+// --- 1. IMPORT THE NEW STUDY NOTES PAGE ---
 
 // Get the Publishable Key from your environment variables
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key");
+  throw new Error("Missing Publishable Key from .env file");
 }
 
+// --- Define the application routes ---
 const router = createBrowserRouter([
-  // Group 1: Dashboard Routes (Now Protected)
+  // Group 1: Protected Dashboard Routes
   {
     path: "/dashboard",
     element: (
       <>
-        {/* If the user is signed in, render the DashboardLayout. */}
+        {/* Clerk's SignedIn component will render children only if the user is authenticated */}
         <SignedIn>
           <DashboardLayout />
         </SignedIn>
-        {/* If the user is signed out, redirect them to the sign-in page. */}
+        {/* Clerk's SignedOut component will redirect to the sign-in page if the user is not authenticated */}
         <SignedOut>
           <Navigate to="/sign-in" replace />
         </SignedOut>
@@ -41,16 +44,16 @@ const router = createBrowserRouter([
     ),
     children: [
       {
-        path: "", // Index route, resolves to "/dashboard"
+        path: "", // Default route for /dashboard
         element: <DashboardPage />,
       },
       {
-        path: "chats/:id", // Resolves to "/dashboard/chats/:id"
+        path: "chats/:id", // Route for individual chats, e.g., /dashboard/chats/my-first-chat
         element: <ChatPage />,
       },
     ],
   },
-  // Group 2: Public Routes
+  // Group 2: Public Routes (Homepage, Sign-in, Sign-up)
   {
     element: <RootLayout />,
     children: [
@@ -59,20 +62,20 @@ const router = createBrowserRouter([
         element: <Homepage />,
       },
       {
-        path: "/sign-in/*", // Use a wildcard to let Clerk handle fallback routes
+        path: "/sign-in/*",
         element: <SignInPage />,
       },
       {
-        path: "/sign-up/*", // Use a wildcard to let Clerk handle fallback routes
+        path: "/sign-up/*",
         element: <SignUpPage />,
       },
     ],
   },
 ]);
 
+// Render the application
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    {/* Wrap the ClerkProvider with ThemeProvider */}
     <ThemeProvider>
       <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
         <RouterProvider router={router} />

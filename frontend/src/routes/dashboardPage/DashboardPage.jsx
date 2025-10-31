@@ -1,69 +1,101 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef } from "react";
+import { useOutletContext } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 import "./dashboardPage.css";
 
+// Regex to detect YouTube URLs
+const YOUTUBE_URL_REGEX =
+  /(https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11})/;
+
 // Icon component
 const ModernInputIcon = ({ type }) => {
   const paths = {
-    switcher: "M13 10V3L4 14h7v7l9-11h-7z",
-    youtube: "M12.2,12.4c-0.6,0-1,0.5-1,1s0.5,1,1,1s1-0.5,1-1S12.7,12.4,12.2,12.4z M17.9,12.1c-0.2-0.8-0.9-1.5-1.7-1.7 c-1.5-0.4-3.9-0.4-5.4,0C10,10.6,9.3,11.3,9.1,12.1c-0.2,1.2-0.2,3.7,0,4.9c0.2,0.8,0.9,1.5,1.7,1.7c1.5,0.4,3.9,0.4,5.4,0 c0.8-0.2,1.5-0.9,1.7-1.7C18.1,15.8,18.1,13.3,17.9,12.1z",
     upload: "M12 5v14m-7-7h14",
-    submit: "M12 5l0 14",
+    submit: "M12 5v14M12 5l-5 5M12 5l5 5",
   };
-  const path = type === 'submit' ? "M12 5v14M12 5l-5 5M12 5l5 5" : paths[type];
+  const path = paths[type];
   return (
-    <svg viewBox="0 0 24 24" className={`input-icon icon-${type}`} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      className={`input-icon icon-${type}`}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d={path} />
     </svg>
   );
 };
 
 const DashboardPage = () => {
-  const navigate = useNavigate();
-  const [inputMode, setInputMode] = useState('question');
   const { user } = useUser();
+  const { handleCreateChat } = useOutletContext();
+  const fileInputRef = useRef(null);
+  const formRef = useRef(null);
+  const textareaRef = useRef(null);
 
-  // Container controls the sequence timing
+  // Animation variants (unchanged)
   const containerVariants = {
-    hidden: { opacity: 1 }, // Keep opacity at 1 since PageTransition handles fade
+    hidden: { opacity: 1 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.15, // Faster stagger for snappier feel
-        delayChildren: 0.1, // Small delay to let page fade in first
-      },
+      transition: { staggerChildren: 0.15, delayChildren: 0.1 },
     },
   };
-
-  // Items slide up with scale for a polished effect
   const itemVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 30,
-      scale: 0.95
-    },
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { 
-        type: "spring", 
-        stiffness: 260,
-        damping: 20,
-        mass: 0.8
-      },
+      transition: { type: "spring", stiffness: 260, damping: 20, mass: 0.8 },
     },
   };
 
+  // --- THIS IS THE FIXED SUBMIT LOGIC ---
   const onSubmit = (e) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const q = (data.get(inputMode) || "").toString().trim();
-    if (!q) return;
-    const id = encodeURIComponent(q.slice(0, 40).replace(/\s+/g, "-"));
-    navigate(`/dashboard/chats/${id}`);
+    const prompt = (data.get("prompt") || "").toString().trim(); // Gets "prompt"
+    if (!prompt) return;
+
+    // Check if the prompt contains a YouTube link
+    const hasYouTubeLink = YOUTUBE_URL_REGEX.test(prompt);
+    const mode = hasYouTubeLink ? "youtube" : "question";
+
+    // Call the layout function with the prompt and the detected mode
+    handleCreateChat(prompt, mode);
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      handleCreateChat(file.name, "document", file);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleInputResize = (e) => {
+    const textarea = e.target;
+    textarea.style.height = "auto";
+    const newHeight = `${textarea.scrollHeight}px`;
+    textarea.style.height = newHeight;
+    if (formRef.current) {
+      const container = formRef.current.querySelector(".input-container");
+      if (container) {
+        container.style.height = "auto";
+      }
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      formRef.current.requestSubmit();
+    }
   };
 
   return (
@@ -73,51 +105,56 @@ const DashboardPage = () => {
       initial="hidden"
       animate="visible"
     >
-      {/* Title animates first */}
       <motion.h2 className="page-title" variants={itemVariants}>
-        Hello, {user?.firstName || ''}
+        Hello, {user?.firstName || ""}
       </motion.h2>
 
-      {/* Subtitle and form animate together as second item */}
       <motion.div className="synced-content" variants={itemVariants}>
-        <p className="page-subtitle">
-          What do you want to learn?
-        </p>
+        <p className="page-subtitle">What do you want to learn?</p>
 
         <div className="form-container">
-          <form className={`modern-input-wrapper ${inputMode}`} onSubmit={onSubmit}>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+            accept=".pdf,.docx"
+          />
+
+          {/* --- THIS IS THE FIXED FORM --- */}
+          <form
+            ref={formRef}
+            className="modern-input-wrapper"
+            onSubmit={onSubmit}
+          >
             <div className="input-container">
               <button
                 type="button"
-                className="input-button mode-switch-btn"
-                onClick={() => setInputMode(prev => prev === 'question' ? 'youtube' : 'question')}
-                aria-label="Switch input mode"
+                className="input-button upload-btn"
+                aria-label="Upload file"
+                onClick={handleUploadClick}
               >
-                <div className="icon-flipper">
-                  <ModernInputIcon type="switcher" />
-                  <ModernInputIcon type="youtube" />
-                </div>
-              </button>
-              <button type="button" className="input-button upload-btn" aria-label="Upload file">
                 <ModernInputIcon type="upload" />
               </button>
+
               <div className="input-fields-container">
-                <input
-                  key="question-input"
+                <textarea
+                  ref={textareaRef}
                   className="modern-input"
-                  name="question"
-                  placeholder="Ask anything..."
+                  name="prompt" // Name is "prompt"
+                  placeholder="Ask anything, or paste a YouTube link..."
                   autoComplete="off"
-                />
-                <input
-                  key="youtube-input"
-                  className="modern-input"
-                  name="youtube"
-                  placeholder="Paste a YouTube video link..."
-                  autoComplete="off"
+                  rows="1"
+                  onInput={handleInputResize}
+                  onKeyDown={handleKeyDown}
                 />
               </div>
-              <button className="input-button modern-submit-btn" aria-label="Submit">
+
+              <button
+                type="submit"
+                className="input-button modern-submit-btn"
+                aria-label="Submit"
+              >
                 <ModernInputIcon type="submit" />
               </button>
             </div>
