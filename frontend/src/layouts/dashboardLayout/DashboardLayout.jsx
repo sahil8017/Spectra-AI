@@ -13,7 +13,6 @@ import { AnimatePresence } from "framer-motion";
 import PageTransition from "../../components/PageTransition/PageTransition";
 import ThemeToggle from "../../components/ThemeToggle/ThemeToggle";
 
-// --- ICONS ---
 const HamburgerIcon = () => (
   <svg
     width="24"
@@ -68,11 +67,11 @@ const NewChatIcon = () => (
   </svg>
 );
 
-// --- SIDEBAR COMPONENT ---
-const Sidebar = ({ isExpanded, onToggle, recentChats }) => {
+const Sidebar = ({ isExpanded, onToggle, recentChats, isLoading }) => {
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
   const { pathname } = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const activeChatId = useMemo(() => {
     const parts = pathname.split("/");
@@ -80,6 +79,13 @@ const Sidebar = ({ isExpanded, onToggle, recentChats }) => {
       ? decodeURIComponent(parts[3])
       : null;
   }, [pathname]);
+
+  const filteredChats = useMemo(() => {
+    if (!searchQuery.trim()) return recentChats;
+    return recentChats.filter((chat) =>
+      chat.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [recentChats, searchQuery]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -95,7 +101,6 @@ const Sidebar = ({ isExpanded, onToggle, recentChats }) => {
     };
 
     document.addEventListener("keydown", handleKeyDown);
-
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
@@ -131,27 +136,40 @@ const Sidebar = ({ isExpanded, onToggle, recentChats }) => {
             type="text"
             placeholder="Search chats"
             className="sidebar-text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <span className="sidebar-shortcut shortcut-on-hover">Ctrl+K</span>
         </div>
 
         <div className="recent-chats-list">
           <h3 className="recent-chats-title">Recent Chats</h3>
-          <ul>
-            {/* Render chats from state */}
-            {recentChats.map((chat) => (
-              <li key={chat.id}>
-                <Link
-                  to={`/dashboard/chats/${encodeURIComponent(chat.id)}`}
-                  className={`nav-link ${
-                    activeChatId === chat.id ? "active" : ""
-                  }`}
-                >
-                  <span className="nav-text">{chat.title}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          
+          {isLoading ? (
+            <div className="sidebar-loading">
+              <div className="sidebar-loading-spinner"></div>
+              <p className="sidebar-loading-text">Loading chats...</p>
+            </div>
+          ) : filteredChats.length === 0 ? (
+            <div className="sidebar-empty">
+              {searchQuery.trim() ? "No chats found" : "No chats yet. Start a conversation!"}
+            </div>
+          ) : (
+            <ul>
+              {filteredChats.map((chat) => (
+                <li key={chat._id}>
+                  <Link
+                    to={`/dashboard/chats/${encodeURIComponent(chat._id)}`}
+                    className={`nav-link ${
+                      activeChatId === chat._id ? "active" : ""
+                    }`}
+                  >
+                    <span className="nav-text">{chat.title}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </nav>
 
@@ -163,62 +181,118 @@ const Sidebar = ({ isExpanded, onToggle, recentChats }) => {
   );
 };
 
-// --- DASHBOARD LAYOUT COMPONENT ---
 const DashboardLayout = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
-  const { isSignedIn, isLoaded } = useAuth();
+  const [recentChats, setRecentChats] = useState([]);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
+  const { isSignedIn, isLoaded, getToken } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const hasLoadedChats = useRef(false);
 
-  // --- MODIFIED: Load chats from localStorage on initial render ---
-  const [recentChats, setRecentChats] = useState(() => {
-    const savedChats = localStorage.getItem("spECTRA_recentChats");
-    return savedChats ? JSON.parse(savedChats) : [];
-  });
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:5000";
 
-  // --- NEW: Save chats to localStorage whenever they change ---
+  // Load chats from backend
   useEffect(() => {
-    localStorage.setItem("spECTRA_recentChats", JSON.stringify(recentChats));
-  }, [recentChats]);
+    const loadChats = async () => {
+      if (!isSignedIn || hasLoadedChats.current) return;
+      
+      hasLoadedChats.current = true;
+      setIsLoadingChats(true);
 
-  const handleCreateChat = (prompt, mode, file = null) => {
+      try {
+        const token = await getToken();
+        const response = await fetch(`${API_BASE_URL}/api/chats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setRecentChats(data.chats || []);
+        }
+      } catch (error) {
+        console.error("Error loading chats:", error);
+      } finally {
+        setIsLoadingChats(false);
+      }
+    };
+
+    if (isLoaded && isSignedIn) {
+      loadChats();
+    }
+  }, [isSignedIn, isLoaded, getToken, API_BASE_URL]);
+
+  const handleCreateChat = async (prompt, mode, file = null) => {
     const title = file
       ? file.name
       : prompt.length > 25
       ? prompt.slice(0, 25) + "..."
       : prompt;
 
-    // --- MODIFIED: Use crypto.randomUUID() for a reliable unique ID ---
-    const newChatId = crypto.randomUUID();
-    const newChat = {
-      id: newChatId,
-      title: title,
-    };
+    try {
+      const token = await getToken();
 
-    // Add to recent chats list (newest first)
-    setRecentChats((prevChats) => [newChat, ...prevChats]);
+      const response = await fetch(`${API_BASE_URL}/api/create-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: title,
+          text: mode !== "document" ? prompt : null,
+        }),
+      });
 
-    // Navigate to the new chat page and pass all info in the state
-    navigate(`/dashboard/chats/${newChatId}`, {
-      state: {
-        firstPrompt: prompt,
-        mode: mode,
-        file: file,
-      },
-    });
+      if (!response.ok) {
+        throw new Error("Failed to create chat on server");
+      }
+
+      const data = await response.json();
+      const newChatId = data.chatId;
+
+      const newChat = {
+        _id: newChatId,
+        title: title,
+      };
+
+      setRecentChats((prevChats) => [newChat, ...prevChats]);
+
+      navigate(`/dashboard/chats/${newChatId}`, {
+        state: {
+          firstPrompt: mode !== "document" ? prompt : file.name,
+          mode: mode,
+          file: file,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating chat:", error);
+      alert("Failed to create chat. Please try again.");
+    }
   };
 
-  if (!isLoaded) return <div>Loading...</div>;
+  if (!isLoaded) {
+    return (
+      <div className="dashboard-shell">
+        <div className="chat-loading-overlay">
+          <div className="chat-loading-spinner"></div>
+          <p className="chat-loading-text">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isSignedIn) return <Navigate to="/sign-in" replace />;
 
   return (
     <div
-      className={`dashboard-shell ${isSidebarExpanded ? "expanded" : "collapsed"}`}
+      className={`dashboard-shell ${
+        isSidebarExpanded ? "expanded" : "collapsed"
+      }`}
     >
       {!isSidebarExpanded && (
         <button
           className="sidebar-open-button"
-          style={{ position: 'fixed', top: 16, left: 16, zIndex: 1200 }}
           onClick={() => setIsSidebarExpanded(true)}
           aria-label="Open sidebar"
         >
@@ -227,8 +301,9 @@ const DashboardLayout = () => {
       )}
       <Sidebar
         isExpanded={isSidebarExpanded}
-        onToggle={() => setIsSidebarExpanded(prev => !prev)}
+        onToggle={() => setIsSidebarExpanded((prev) => !prev)}
         recentChats={recentChats}
+        isLoading={isLoadingChats}
       />
       <div className="content-wrapper">
         <main className="main-content">

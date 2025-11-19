@@ -4,11 +4,9 @@ import { useUser } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 import "./dashboardPage.css";
 
-// Regex to detect YouTube URLs
 const YOUTUBE_URL_REGEX =
   /(https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11})/;
 
-// Icon component
 const ModernInputIcon = ({ type }) => {
   const paths = {
     upload: "M12 5v14m-7-7h14",
@@ -33,8 +31,8 @@ const DashboardPage = () => {
   const fileInputRef = useRef(null);
   const formRef = useRef(null);
   const textareaRef = useRef(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Animation variants (unchanged)
   const containerVariants = {
     hidden: { opacity: 1 },
     visible: {
@@ -42,6 +40,7 @@ const DashboardPage = () => {
       transition: { staggerChildren: 0.15, delayChildren: 0.1 },
     },
   };
+  
   const itemVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.95 },
     visible: {
@@ -52,30 +51,50 @@ const DashboardPage = () => {
     },
   };
 
-  // --- THIS IS THE FIXED SUBMIT LOGIC ---
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     const data = new FormData(e.currentTarget);
-    const prompt = (data.get("prompt") || "").toString().trim(); // Gets "prompt"
+    const prompt = (data.get("prompt") || "").toString().trim();
+    
     if (!prompt) return;
 
-    // Check if the prompt contains a YouTube link
-    const hasYouTubeLink = YOUTUBE_URL_REGEX.test(prompt);
-    const mode = hasYouTubeLink ? "youtube" : "question";
+    setIsSubmitting(true);
 
-    // Call the layout function with the prompt and the detected mode
-    handleCreateChat(prompt, mode);
-  };
+    try {
+      const hasYouTubeLink = YOUTUBE_URL_REGEX.test(prompt);
+      const mode = hasYouTubeLink ? "youtube" : "question";
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      handleCreateChat(file.name, "document", file);
+      await handleCreateChat(prompt, mode);
+    } catch (error) {
+      console.error("Error submitting:", error);
+      alert("Failed to create chat. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file && !isSubmitting) {
+      setIsSubmitting(true);
+      try {
+        await handleCreateChat(file.name, "document", file);
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("Failed to upload file. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+    event.target.value = null;
+  };
+
   const handleUploadClick = () => {
-    fileInputRef.current.click();
+    if (!isSubmitting) {
+      fileInputRef.current.click();
+    }
   };
 
   const handleInputResize = (e) => {
@@ -92,7 +111,7 @@ const DashboardPage = () => {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !isSubmitting) {
       e.preventDefault();
       formRef.current.requestSubmit();
     }
@@ -119,9 +138,9 @@ const DashboardPage = () => {
             onChange={handleFileChange}
             style={{ display: "none" }}
             accept=".pdf,.docx"
+            disabled={isSubmitting}
           />
 
-          {/* --- THIS IS THE FIXED FORM --- */}
           <form
             ref={formRef}
             className="modern-input-wrapper"
@@ -133,6 +152,7 @@ const DashboardPage = () => {
                 className="input-button upload-btn"
                 aria-label="Upload file"
                 onClick={handleUploadClick}
+                disabled={isSubmitting}
               >
                 <ModernInputIcon type="upload" />
               </button>
@@ -141,12 +161,13 @@ const DashboardPage = () => {
                 <textarea
                   ref={textareaRef}
                   className="modern-input"
-                  name="prompt" // Name is "prompt"
+                  name="prompt"
                   placeholder="Ask anything, or paste a YouTube link..."
                   autoComplete="off"
                   rows="1"
                   onInput={handleInputResize}
                   onKeyDown={handleKeyDown}
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -154,6 +175,7 @@ const DashboardPage = () => {
                 type="submit"
                 className="input-button modern-submit-btn"
                 aria-label="Submit"
+                disabled={isSubmitting}
               >
                 <ModernInputIcon type="submit" />
               </button>
