@@ -1,0 +1,145 @@
+.endChat {
+  padding-bottom: 40px;
+}
+
+/* Wrapper to position the input at the bottom */
+.newForm {
+  width: 50%;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  /* Removed visual styles from wrapper, moved to .input-container */
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* --- STYLES FROM DASHBOARD PAGE (Adapted) --- */
+
+.input-container {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px;
+  
+  /* Visual Style matching Dashboard */
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 24px;
+  
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 64px;
+  height: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.input-container:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 20%, transparent);
+}
+
+/* Buttons */
+.input-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  
+  background-color: var(--bg-tertiary);
+  
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 48px;
+  height: 48px;
+}
+
+.input-button:hover {
+  background-color: var(--border-primary);
+  transform: scale(1.05);
+}
+
+.input-button:active {
+  transform: scale(0.95);
+}
+
+.input-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Icons */
+.input-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--text-secondary);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* Input Area */
+.input-fields-container {
+  flex-grow: 1;
+  position: relative;
+  height: auto;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.modern-input {
+  width: 100%;
+  height: auto;
+  min-height: 24px;
+  max-height: 200px;
+  padding: 12px 8px;
+  background: transparent;
+  border: none;
+  outline: none;
+  
+  color: var(--text-primary);
+  font-size: 16px;
+  font-family: inherit; /* Inherit from parent/global */
+  resize: none;
+  line-height: 1.5;
+  overflow-y: auto;
+}
+
+.modern-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* Submit Button Specifics */
+.modern-submit-btn {
+  background-color: var(--accent-primary);
+}
+
+.modern-submit-btn .input-icon {
+  color: white;
+}
+
+.modern-submit-btn:hover {
+  filter: brightness(1.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .newForm {
+    width: 90%;
+    bottom: 10px;
+  }
+  
+  .input-button {
+    width: 44px;
+    height: 44px;
+  }
+}

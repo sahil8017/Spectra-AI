@@ -1,9 +1,9 @@
-# models/chat.py
+# backend/models/chat.py
 from backend.db import db
 from datetime import datetime
 from bson import ObjectId
 
-chat_collection = db["chats"]  # unify name to "chats"
+chat_collection = db["chats"]
 
 def create_chat(user_id, text=None, img=None, title="New chat"):
     new_chat = {
@@ -61,3 +61,13 @@ def add_to_chat(chat_id, user_id, question=None, answer=None, img=None):
         {"$push": {"history": {"$each": new_items}}, "$set": {"updatedAt": datetime.utcnow()}}
     )
     return res
+
+def delete_chat(chat_id, user_id):
+    """Deletes a single chat document."""
+    try:
+        oid = ObjectId(chat_id)
+    except Exception:
+        return False
+    
+    result = chat_collection.delete_one({"_id": oid, "userId": user_id})
+    return result.deleted_count > 0

@@ -1,43 +1,24 @@
 # backend/app.py
 import os
 import re
-import shlex
-import subprocess
 from datetime import datetime
 
 from flask import Flask, request, jsonify, g
 from flask_cors import CORS
 from dotenv import load_dotenv
 from bson import ObjectId
-from werkzeug.utils import secure_filename # For file uploads
+from werkzeug.utils import secure_filename
 
 # ---------------------------------------------------------------------
-# Local imports (backend package)
+# Local imports
 # ---------------------------------------------------------------------
 from backend.db import db
 from backend.auth import require_auth
-from backend.models.chat import create_chat, get_chat, add_to_chat
-from backend.models.user_chats import add_user_chat, get_user_chats
+
+# Models
+from backend.models.chat import create_chat, get_chat, add_to_chat, delete_chat
+from backend.models.user_chats import add_user_chat, get_user_chats, remove_user_chat, delete_all_user_chats
 from backend.models.history import save_history, get_all_history, get_history_by_video
-
-# ---------------------------------------------------------------------
-# Optional model (Google Gemini)
-# ---------------------------------------------------------------------
-try:
-    import google.generativeai as genai
-except Exception:
-    genai = None
-
-# ---------------------------------------------------------------------
-# YouTube transcript lib
-# ---------------------------------------------------------------------
-try:
-    # import module and class to avoid shadowing issues
-    import youtube_transcript_api as yta
-    from youtube_transcript_api import YouTubeTranscriptApi
-except Exception:
-    yta = None
-    YouTubeTranscriptApi = None
 
 # ---------------------------------------------------------------------
 # Env & Config
@@ -46,21 +27,35 @@ load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 MODEL_NAME = os.getenv("MODEL_NAME", "gemini-2.5-flash")
-MAX_AI_CHARS = int(os.getenv("MAX_AI_CHARS", 1200))
-
-app = Flask(__name__)
-CORS(app) # This is already correctly configured
+MAX_AI_CHARS = int(os.getenv("MAX_AI_CHARS", "5000"))
 
 # ---------------------------------------------------------------------
 # AI Model Setup
 # ---------------------------------------------------------------------
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
+    print("WARNING: google-generativeai library missing.")
+
 model = None
 if genai and GEMINI_API_KEY:
     try:
         genai.configure(api_key=GEMINI_API_KEY)
         model = genai.GenerativeModel(MODEL_NAME)
-    except Exception:
-        model = None
+    except Exception as e:
+        print("Gemini init error:", e)
+
+# ---------------------------------------------------------------------
+# YouTube Transcript
+# ---------------------------------------------------------------------
+try:
+    from youtube_transcript_api import YouTubeTranscriptApi
+except:
+    YouTubeTranscriptApi = None
+
+app = Flask(__name__)
+CORS(app, supports_credentials=True)
 
 chats_collection = db["chats"]
 
@@ -68,9 +63,7 @@ chats_collection = db["chats"]
 # Helpers
 # ---------------------------------------------------------------------
 def serialize_doc(doc):
-    """Convert MongoDB doc to JSON‑serializable dict."""
-    if not doc:
-        return None
+    if not doc: return None
     out = dict(doc)
     if "_id" in out:
         out["_id"] = str(out["_id"])
@@ -79,86 +72,83 @@ def serialize_doc(doc):
             out[k] = out[k].isoformat()
     return out
 
-
 def format_history_for_frontend(history):
-    """Convert internal history format to simple {role,text,img} list."""
     formatted = []
     for item in history:
         role = item.get("role")
         parts = item.get("parts", [])
         text = "".join([p.get("text", "") for p in parts])
         entry = {"role": role, "text": text}
-        if "img" in item and item["img"] is not None:
+        if "img" in item:
             entry["img"] = item["img"]
         formatted.append(entry)
     return formatted
 
-
-def clean_ai_response(text: str) -> str:
-    """Normalize and trim AI response."""
-    if text is None:
+def clean_ai_response(text):
+    if not text:
         return ""
     s = text.strip()
     s = re.sub(r"\n{3,}", "\n\n", s)
     if len(s) > MAX_AI_CHARS:
-        cut = s[:MAX_AI_CHARS]
-        if " " in cut:
-            cut = cut.rsplit(" ", 1)[0]
-        s = cut + "..."
+        s = s[:MAX_AI_CHARS]
+        if " " in s:
+            s = s.rsplit(" ", 1)[0]
+        s += "..."
     return s
 
-
-def extract_youtube_id(url: str) -> str:
-    """Extract the YouTube Video ID from any type of link or raw ID."""
-    if not url:
-        return None
+def extract_youtube_id(url):
+    if not url: return None
     url = url.strip()
-
-    # Short link
     if "youtu.be/" in url:
         return url.split("youtu.be/")[-1].split("?")[0].split("&")[0]
-
-    # Standard or embed/shorts links
     if "youtube.com" in url:
         m = re.search(r"[?&]v=([^&]+)", url)
-        if m:
-            return m.group(1)
+        if m: return m.group(1)
         m2 = re.search(r"/(shorts|embed)/([^?&/]+)", url)
-        if m2:
-            return m2.group(2)
-
-    # Direct video ID
+        if m2: return m2.group(2)
     if re.fullmatch(r"[A-Za-z0-9_-]{6,}", url):
         return url
-
     return None
 
 # ---------------------------------------------------------------------
 # CHAT ROUTES
 # ---------------------------------------------------------------------
-@app.route("/api/chats", methods=["GET"])
+
+@app.route("/api/chats", methods=["GET", "DELETE"])
 @require_auth
-def get_chats_route():
+def chats_route():
     user_id = getattr(g, "user_id", "guest")
-    # Sort by update time, newest first
+
+    if request.method == "DELETE":
+        delete_all_user_chats(user_id)
+        return jsonify({"success": True, "message": "All chats cleared"})
+
     chats = list(chats_collection.find({"userId": user_id}, {"history": 0}).sort("updatedAt", -1))
     chats = [serialize_doc(c) for c in chats]
     return jsonify({"chats": chats})
 
 
-@app.route("/api/chat/<chat_id>", methods=["GET"])
+@app.route("/api/chat/<chat_id>", methods=["GET", "DELETE"])
 @require_auth
-def get_chat_route(chat_id):
+def handle_chat_route(chat_id):
     user_id = getattr(g, "user_id", "guest")
+
+    if request.method == "DELETE":
+        success = delete_chat(chat_id, user_id)
+        if success:
+            remove_user_chat(user_id, chat_id)
+            return jsonify({"success": True})
+        return jsonify({"error": "Not found"}), 404
+
     try:
         chat = chats_collection.find_one({"_id": ObjectId(chat_id), "userId": user_id})
-    except Exception:
+    except:
         return jsonify({"error": "Invalid chat id"}), 400
+
     if not chat:
         return jsonify({"error": "Chat not found"}), 404
 
     chat = serialize_doc(chat)
-    # This history is now used by the frontend
     chat["history"] = format_history_for_frontend(chat.get("history", []))
     return jsonify(chat)
 
@@ -169,282 +159,167 @@ def create_chat_route():
     user_id = getattr(g, "user_id", "guest")
     data = request.get_json() or {}
     title = data.get("title", "New Chat")
-    initial_text = data.get("text") # Frontend now sends this
+    initial_text = data.get("text")
 
-    # Pass the initial text to the create_chat function
     chat_id = create_chat(user_id, text=initial_text, title=title)
-    
-    # This part is optional but good for user-centric models
-    try:
-        add_user_chat(user_id, chat_id, title)
-    except Exception:
-        pass
+    add_user_chat(user_id, chat_id, title)
 
-    # Return the new chat ID
     return jsonify({"chatId": chat_id, "title": title})
 
 
 @app.route("/api/send-message", methods=["POST"])
 @require_auth
 def send_message_route():
-    user_id = getattr(g, "user_id", "guest")
+    user_id = g.user_id
     data = request.get_json() or {}
-    chat_id = data.get("chatId") # Frontend sends "chatId"
-    text = data.get("text")      # Frontend sends "text"
+    chat_id = data.get("chatId")
+    text = data.get("text")
 
     if not chat_id or not text:
         return jsonify({"error": "Missing chatId or text"}), 400
-    
-    # Check if chat exists and belongs to user
-    try:
-        chat_exists = chats_collection.find_one({"_id": ObjectId(chat_id), "userId": user_id})
-    except Exception:
-        return jsonify({"error": "Invalid chat ID format"}), 400
-    
-    if not chat_exists:
-        return jsonify({"error": "Chat not found or access denied"}), 404
 
-    ai_response = "Sorry — I couldn't generate a response right now."
+    try:
+        exists = chats_collection.find_one({"_id": ObjectId(chat_id), "userId": user_id})
+    except:
+        return jsonify({"error": "Invalid chat ID"}), 400
+
+    if not exists:
+        return jsonify({"error": "Chat not found"}), 404
+
+    ai_response = "Sorry, I couldn't generate a response."
 
     if model:
         try:
-            # TODO: Add chat history to the prompt for context
-            #
-            # Example:
-            # chat_history = chat_exists.get("history", [])
-            # full_prompt = "---START HISTORY---\n"
-            # for msg in chat_history:
-            #   full_prompt += f"{msg['role']}: {msg['parts'][0]['text']}\n"
-            # full_prompt += "---END HISTORY---\n"
-            # full_prompt += f"user: {text}"
-            #
-            # resp = model.generate_content(full_prompt)
-            # 
-            # For now, just send the last message
-            
             resp = model.generate_content(text)
-
-            if hasattr(resp, "text"):
-                ai_response = resp.text
-            elif isinstance(resp, dict):
-                candidates = resp.get("candidates") or []
-                if candidates:
-                    content = candidates[0].get("content") or {}
-                    ai_response = (content.get("parts", [{}])[0].get("text") or 
-                                   candidates[0].get("text") or 
-                                   ai_response)
-            else:
-                ai_response = str(resp)
+            ai_response = clean_ai_response(resp.text)
         except Exception as e:
-            print(f"Gemini Error: {e}")
-            pass
+            print("Gemini error:", e)
 
-    ai_response = clean_ai_response(ai_response)
+    add_to_chat(chat_id, user_id, question=text, answer=ai_response)
 
-    try:
-        add_to_chat(chat_id, user_id, question=text, answer=ai_response)
-    except Exception as e:
-        return jsonify(
-            {
-                "user": text,
-                "ai": ai_response,
-                "warning": "Failed to save message",
-                "detail": str(e),
-            }
-        ), 200 # Still return 200 so frontend can display AI response
-
-    # Frontend expects { "ai": "..." }
     return jsonify({"user": text, "ai": ai_response})
 
 # ---------------------------------------------------------------------
-# HISTORY ROUTES (No changes needed)
+# HISTORY & YOUTUBE
 # ---------------------------------------------------------------------
-@app.route("/api/history", methods=["GET"])
-@require_auth
-def history_all_route():
-    user_id = getattr(g, "user_id", "guest")
-    history = get_all_history(user_id)
-    output = []
-    for h in history:
-        h["_id"] = str(h["_id"])
-        if hasattr(h.get("createdAt"), "isoformat"):
-            h["createdAt"] = h["createdAt"].isoformat()
-        output.append(h)
-    return jsonify({"history": output})
 
-
-@app.route("/api/history/<video_id>", methods=["GET"])
-@require_auth
-def history_one_route(video_id):
-    user_id = getattr(g, "user_id", "guest")
-    item = get_history_by_video(user_id, video_id)
-    if not item:
-        return jsonify({"error": "Not found"}), 404
-    item["_id"] = str(item["_id"])
-    if hasattr(item.get("createdAt"), "isoformat"):
-        item["createdAt"] = item["createdAt"].isoformat()
-    return jsonify(item)
-
-# ---------------------------------------------------------------------
-# YOUTUBE SUMMARY (Frontend now calls this)
-# ---------------------------------------------------------------------
 @app.route("/api/youtube", methods=["POST"])
 @require_auth
 def youtube_route():
-    """
-    POST body: { "url": "<youtube url>" }
-    Response: { ..., "summary": "..." }
-    """
     data = request.get_json() or {}
-    url = data.get("url") # Frontend sends "url"
-    user_id = getattr(g, "user_id", "guest")
+    url = data.get("url")
+    user_id = g.user_id
 
     if not url:
-        return jsonify({"error": "Missing YouTube URL"}), 400
+        return jsonify({"error": "Missing URL"}), 400
 
     video_id = extract_youtube_id(url)
     if not video_id:
         return jsonify({"error": "Invalid YouTube URL"}), 400
 
-    transcript_text = None
-    transcript_error = None
-    transcript_available = False
+    transcript = None
+    transcript_error = ""
 
-    if YouTubeTranscriptApi is not None:
+    if YouTubeTranscriptApi:
         try:
-            parts = YouTubeTranscriptApi.get_transcript(
-                video_id, languages=["en", "en-US", "en-GB"]
-            )
-            transcript_text = " ".join(p.get("text", "") for p in parts)
-            transcript_available = True
-        except Exception as ex:
-            transcript_error = f"get_transcript error: {repr(ex)}"
-            # Fallback strategy
-            try:
-                transcripts = YouTubeTranscriptApi.list_transcripts(video_id)
-                chosen = transcripts.find_transcript(["en", "en-US", "en-GB"]) or next(iter(transcripts), None)
-                if chosen:
-                    fetched = chosen.fetch()
-                    transcript_text = " ".join(p.get("text", "") for p in fetched)
-                    transcript_available = True
-                    transcript_error = None
-            except Exception as ex_fallback:
-                transcript_error += f" | fallback error: {repr(ex_fallback)}"
+            fetched = YouTubeTranscriptApi.get_transcript(video_id)
+            transcript = " ".join([item["text"] for item in fetched])
+        except Exception as e:
+            transcript_error = str(e)
 
     summary = None
-    if transcript_available and model:
+    if transcript and model:
         try:
             prompt = (
-                "Summarize the following YouTube transcript in 3–5 concise bullet points "
-                "or 2–4 short paragraphs:\n\n"
-                + transcript_text[:25000]
+                "Summarize this YouTube transcript in 3–5 key points:\n\n" +
+                transcript[:25000]
             )
             resp = model.generate_content(prompt)
-            # ... (response parsing logic is the same)
-            if hasattr(resp, "text"):
-                summary = clean_ai_response(resp.text)
-            elif isinstance(resp, dict):
-                candidates = resp.get("candidates") or []
-                if candidates:
-                    content = candidates[0].get("content") or {}
-                    summary = clean_ai_response(content.get("parts", [{}])[0].get("text") or "")
-            else:
-                summary = clean_ai_response(str(resp))
-        except Exception as ex:
-            transcript_error = (transcript_error or "") + f" | summary error: {repr(ex)}"
-    elif not transcript_available:
-        summary = "Could not generate a summary because no transcript was found for this video."
-    
-    if summary:
-        try:
-            save_history(
-                user_id=user_id,
-                video_id=video_id,
-                title=summary.split("\n")[0][:120],
-                summary=summary,
-                mode="Video Summary",
-            )
+            summary = clean_ai_response(resp.text)
         except Exception as e:
-            print(f"Failed to save history: {e}")
+            summary = f"AI Error: {e}"
 
-    return jsonify(
-        {
-            "videoId": video_id,
-            "transcript": transcript_text if transcript_available else None,
-            "transcriptError": transcript_error,
-            "summary": summary, # Frontend expects this
-        }
-    )
+    if transcript and summary:
+        save_history(
+            user_id=user_id,
+            video_id=video_id,
+            title=summary[:80],
+            summary=summary,
+            mode="Video Summary"
+        )
+
+    return jsonify({
+        "videoId": video_id,
+        "transcript": transcript,
+        "transcriptError": transcript_error,
+        "summary": summary
+    })
+
 
 # ---------------------------------------------------------------------
-# NEW DOCUMENT SUMMARY ROUTE (STUB)
+# DOCUMENT SUMMARIES
 # ---------------------------------------------------------------------
+
 @app.route("/api/document", methods=["POST"])
 @require_auth
 def document_route():
-    user_id = getattr(g, "user_id", "guest")
-    
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    
-    file = request.files['file']
-    prompt = request.form.get('prompt', 'summarize this document')
-    
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    
-    if file:
-        filename = secure_filename(file.filename)
-        
-        # --- STUBBED RESPONSE ---
-        # In a real app, you would install 'pypdf2' or 'python-docx',
-        # read the file content, and send it to the Gemini model.
-        #
-        # Example (not run):
-        # text = ""
-        # if filename.endswith('.pdf'):
-        #   from pypdf import PdfReader
-        #   reader = PdfReader(file)
-        #   for page in reader.pages:
-        #       text += page.extract_text()
-        # elif filename.endswith('.docx'):
-        #   from docx import Document
-        #   doc = Document(file)
-        #   for para in doc.paragraphs:
-        #       text += para.text + "\n"
-        #
-        # resp = model.generate_content(f"{prompt}:\n\n{text[:20000]}")
-        # ai_response = resp.text
-        
-        # For now, we'll just return a stubbed response.
-        ai_response = f"File '{filename}' received. Document processing is not yet implemented in this demo."
-        
+    user_id = g.user_id
+
+    if "file" not in request.files:
+        return jsonify({"error": "No file"}), 400
+
+    file = request.files["file"]
+    filename = secure_filename(file.filename)
+    ext = filename.lower().split(".")[-1]
+
+    text = ""
+
+    try:
+        if ext == "pdf":
+            import PyPDF2
+            reader = PyPDF2.PdfReader(file.stream)
+            for page in reader.pages:
+                t = page.extract_text() or ""
+                text += t + "\n"
+
+        elif ext == "docx":
+            from docx import Document
+            doc = Document(file)
+            for p in doc.paragraphs:
+                text += p.text + "\n"
+
+        elif ext == "txt":
+            text = file.read().decode("utf-8", errors="ignore")
+
+        else:
+            return jsonify({"error": "Unsupported format"}), 400
+
+    except Exception as e:
+        return jsonify({"error": f"Read error: {e}"}), 500
+
+    summary = "Could not summarize."
+
+    if model and text.strip():
         try:
-            save_history(
-                user_id=user_id,
-                video_id=filename, # Use filename as ID
-                title=f"Doc: {filename}",
-                summary=ai_response,
-                mode="Document Summary",
-            )
+            prompt = "Summarize this document in 3–6 bullet points:\n\n" + text[:25000]
+            resp = model.generate_content(prompt)
+            summary = clean_ai_response(resp.text)
         except Exception as e:
-            print(f"Failed to save doc history: {e}")
+            summary = f"AI Error: {e}"
 
-        # Frontend expects { "summary": "..." }
-        return jsonify({"summary": ai_response})
-
-    return jsonify({"error": "File processing failed"}), 500
-
-
-# ---------------------------------------------------------------------
-# Run Server
-# ---------------------------------------------------------------------
-if __name__ == "__main__":
-    debug = os.getenv("FLASK_DEBUG", "true").lower() in ("1", "true", "yes")
-
-    app.run(
-        debug=debug,
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", 5000)),
-        use_reloader=False, 
+    save_history(
+        user_id=user_id,
+        video_id=filename,
+        title=f"Doc: {filename}",
+        summary=summary,
+        mode="Document Summary"
     )
+
+    return jsonify({"file": filename, "summary": summary})
+
+
+# ---------------------------------------------------------------------
+
+if __name__ == "__main__":
+    debug = os.getenv("FLASK_DEBUG", "true").lower() in ("1", "true")
+    app.run(debug=debug, host="0.0.0.0", port=int(os.getenv("PORT", 5000)))

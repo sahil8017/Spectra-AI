@@ -32,6 +32,7 @@
   --z-sidebar-toggle: 1200;
   --z-sidebar: 1100;
   --z-content: 1000;
+  --z-toast: 1300;
 }
 
 /* --- Base Layout --- */
@@ -418,7 +419,7 @@
   margin: 0;
 }
 
-/* --- Navigation Links --- */
+/* --- Navigation Links & Delete Button --- */
 .recent-chats-list .nav-link {
   display: flex;
   align-items: center;
@@ -431,12 +432,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   position: relative;
+  padding-right: 40px; /* Make space for delete button */
 }
 
 .recent-chats-list .nav-link:hover {
   background-color: var(--hover-bg);
   color: var(--text-primary);
-  transform: translateX(2px);
 }
 
 .recent-chats-list .nav-link.active {
@@ -464,6 +465,74 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Delete Button Styles */
+.delete-chat-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  opacity: 0; /* Hidden by default */
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-link:hover .delete-chat-btn {
+  opacity: 1;
+}
+
+.delete-chat-btn:hover {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #ef4444;
+}
+
+/* --- Undo Toast Notification --- */
+.undo-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1a1a1a;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: var(--z-toast);
+  animation: slideUp 0.3s ease;
+}
+
+.undo-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #60a5fa;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.undo-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #93c5fd;
+}
+
+@keyframes slideUp {
+  from { transform: translate(-50%, 100%); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
 }
 
 /* =============================================================================
@@ -664,4 +733,156 @@
     opacity: 1;
     transform: translateX(0);
   }
+}
+/* --- NEW: Sidebar Header & Menu Styles --- */
+.recent-chats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: var(--spacing-lg);
+  position: relative; /* For dropdown positioning */
+}
+
+.three-dots-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.three-dots-btn:hover, .three-dots-btn.active {
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+/* --- Dropdown Menu --- */
+.chat-options-dropdown {
+  position: absolute;
+  right: var(--spacing-lg);
+  top: 30px; /* Below the dots */
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-dropdown);
+  min-width: 140px;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: var(--gemini-font);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.dropdown-item.danger {
+  color: #ef4444;
+}
+
+.dropdown-item.danger:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Animation for Dropdown */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* --- NEW: Sidebar Header & Menu Styles --- */
+.recent-chats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: var(--spacing-lg);
+  position: relative; /* For dropdown positioning */
+}
+
+.three-dots-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.three-dots-btn:hover, .three-dots-btn.active {
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+/* --- Dropdown Menu --- */
+.chat-options-dropdown {
+  position: absolute;
+  right: var(--spacing-lg);
+  top: 30px; /* Below the dots */
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-dropdown);
+  min-width: 140px;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: var(--gemini-font);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.dropdown-item.danger {
+  color: #ef4444;
+}
+
+.dropdown-item.danger:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Animation for Dropdown */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
