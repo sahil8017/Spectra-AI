@@ -157,10 +157,11 @@
 
 .homepage .chat {
   display: flex;
-  align-items: center;
+  flex-direction: row; /* Forces Image and Text to be side-by-side */
+  align-items: center; /* Vertically centers them */
   gap: 10px;
-  width: max-content;
-  max-width: 300px;
+  width: fit-content;  /* Wraps tightly around content */
+  max-width: 350px;    /* Adjusted to allow more space for text on one line */
   padding: 10px 15px;
   position: absolute;
   bottom: -10px;
@@ -170,22 +171,24 @@
   box-shadow: 0 4px 12px rgba(100, 100, 100, 0.08);
   opacity: 0;
   animation: fadeInUp 0.4s ease 0.6s forwards;
+  z-index: 10; /* Ensures it sits on top of other elements */
 }
 
 
 .homepage .chat img {
-  width: 25px;
-  height: 25px;
-  flex-shrink: 0;
-  border-radius: 100%;
+  width: 28px;        /* Slightly larger for better visibility */
+  height: 28px;
+  flex-shrink: 0;     /* Prevents image from getting squished */
+  border-radius: 50%;
   object-fit: cover;
+  display: block;     /* Removes default inline spacing */
 }
-
 
 .homepage .chat .chat-text {
   font-size: 14px;
   line-height: 1.4;
   color: var(--text-primary);
+  white-space: nowrap; /* OPTIONAL: Forces text to stay on one line specifically */
 }
 
 
@@ -194,12 +197,10 @@
   position: absolute;
   z-index: 0 !important;
   pointer-events: none;
-  width: 100vw;
-  max-width: 600px;
+  width: 200vw;
+  max-width: 1600px;
   opacity: 100%;
-  bottom: -50px;
-  left: -50px;
-  animation: rotateOrbital 30s linear infinite;
+  animation: rotateOrbital 60s linear infinite;
   transform-origin: center;
 }
 

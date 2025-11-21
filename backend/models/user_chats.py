@@ -1,55 +1,76 @@
 # backend/models/user_chats.py
 from backend.db import db
 from datetime import datetime
-from bson import ObjectId
 
-user_chats_collection = db["userchats"]
-chat_collection = db["chats"] 
+user_chats_collection = db["user_chats"]
 
-def add_user_chat(user_id, chat_id, title):
-    # chat_id should be string; store it as string for easy client-side usage
-    existing = user_chats_collection.find_one({"userId": user_id})
-
-    chat_entry = {
-        "_id": str(chat_id),
-        "title": title,
-        "createdAt": datetime.utcnow()
-    }
-
-    if not existing:
-        new_doc = {
-            "userId": user_id,
-            "chats": [chat_entry],
-            "createdAt": datetime.utcnow(),
-            "updatedAt": datetime.utcnow(),
-        }
-        user_chats_collection.insert_one(new_doc)
-    else:
-        user_chats_collection.update_one(
+def add_user_chat(user_id, chat_id, title="New Chat"):
+    """Add a chat to user's chat list"""
+    print(f"[DEBUG] Adding chat {chat_id} to user {user_id} chat list")
+    
+    try:
+        result = user_chats_collection.update_one(
             {"userId": user_id},
-            {"$push": {"chats": chat_entry}, "$set": {"updatedAt": datetime.utcnow()}}
+            {
+                "$push": {
+                    "chats": {
+                        "chatId": chat_id,
+                        "title": title,
+                        "createdAt": datetime.utcnow()
+                    }
+                }
+            },
+            upsert=True  # Create if doesn't exist
         )
+        print(f"[DEBUG] User chat list update - Matched: {result.matched_count}, Modified: {result.modified_count}, Upserted: {result.upserted_id}")
+        return True
+    except Exception as e:
+        print(f"[DEBUG] ❌ Error adding to user chats: {e}")
+        return False
+
 
 def get_user_chats(user_id):
-    doc = user_chats_collection.find_one({"userId": user_id})
-    return doc.get("chats", []) if doc else []
+    """Get all chats for a user"""
+    print(f"[DEBUG] Getting chats for user {user_id}")
+    
+    try:
+        user_data = user_chats_collection.find_one({"userId": user_id})
+        if user_data and "chats" in user_data:
+            chats = user_data["chats"]
+            print(f"[DEBUG] ✓ Found {len(chats)} chats for user")
+            return chats
+        else:
+            print(f"[DEBUG] No chats found for user")
+            return []
+    except Exception as e:
+        print(f"[DEBUG] ❌ Error getting user chats: {e}")
+        return []
+
 
 def remove_user_chat(user_id, chat_id):
-    """Removes a single chat reference from the user's list."""
-    user_chats_collection.update_one(
-        {"userId": user_id},
-        {"$pull": {"chats": {"_id": str(chat_id)}}}
-    )
+    """Remove a chat from user's chat list"""
+    print(f"[DEBUG] Removing chat {chat_id} from user {user_id}")
+    
+    try:
+        result = user_chats_collection.update_one(
+            {"userId": user_id},
+            {"$pull": {"chats": {"chatId": chat_id}}}
+        )
+        print(f"[DEBUG] Remove result - Modified: {result.modified_count}")
+        return result.modified_count > 0
+    except Exception as e:
+        print(f"[DEBUG] ❌ Error removing user chat: {e}")
+        return False
+
 
 def delete_all_user_chats(user_id):
-    """
-    1. Deletes the user_chats document (the index list of chats).
-    2. Deletes all actual chat documents belonging to this user from the 'chats' collection.
-    """
-    # 1. Delete the directory
-    user_chats_collection.delete_one({"userId": user_id})
+    """Delete all chats for a user"""
+    print(f"[DEBUG] Deleting all chats for user {user_id}")
     
-    # 2. Delete all actual chat documents
-    chat_collection.delete_many({"userId": user_id})
-    
-    return True
+    try:
+        result = user_chats_collection.delete_one({"userId": user_id})
+        print(f"[DEBUG] Delete all result - Deleted: {result.deleted_count}")
+        return result.deleted_count > 0
+    except Exception as e:
+        print(f"[DEBUG] ❌ Error deleting all user chats: {e}")
+        return False
