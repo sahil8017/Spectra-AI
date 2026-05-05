@@ -1,0 +1,327 @@
+/* ============================================
+   SpectraAI Web Client — Global Design Tokens
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* ── Surface Colors (Dark Mode Default) ── */
+  --color-bg-primary: #212121;
+  --color-bg-sidebar: #171717;
+  --color-bg-surface: #2f2f2f;
+  --color-bg-hover: #2f2f2f;
+  --color-bg-active: #343541;
+  --color-bg-input: #2f2f2f;
+  --color-bg-modal: #1e1e1e;
+  --color-bg-tooltip: #1a1a2e;
+  --color-bg-code: #1e1e2e;
+  --color-bg-user-msg: #2f2f2f;
+
+  /* ── Text Colors ── */
+  --color-text-primary: #ececec;
+  --color-text-secondary: #b4b4b4;
+  --color-text-tertiary: #8e8ea0;
+  --color-text-inverse: #212121;
+  --color-text-link: #7ab7ff;
+  --color-text-placeholder: #8e8ea0;
+
+  /* ── Border Colors ── */
+  --color-border: hsla(0, 0%, 100%, 0.1);
+  --color-border-light: hsla(0, 0%, 100%, 0.05);
+  --color-border-focus: #7ab7ff;
+
+
+  /* ── Accent Colors ── */
+  --color-accent-green: #10a37f;
+  --color-accent-green-hover: #1a7f64;
+  --color-accent-blue: #7ab7ff;
+  --color-accent-purple: #ab68ff;
+  --color-accent-red: #ef4146;
+  --color-accent-orange: #ff8c00;
+
+  /* ── Typography ── */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.8125rem;   /* 13px */
+  --font-size-base: 0.875rem;  /* 14px */
+  --font-size-md: 1rem;        /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.5rem;      /* 24px */
+  --font-size-2xl: 1.75rem;    /* 28px */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* ── Spacing ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Radii ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-input: 0 0 0 2px rgba(122, 183, 255, 0.3);
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* ── Layout ── */
+  --sidebar-width: 260px;
+  --header-height: 48px;
+  --input-max-width: 768px;
+  --chat-max-width: 768px;
+}
+
+/* ── Reset & Base ── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-normal);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: var(--font-family);
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+}
+
+input,
+textarea {
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+textarea {
+  resize: none;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ── Scrollbar Styles ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsla(0, 0%, 100%, 0.15);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsla(0, 0%, 100%, 0.25);
+}
+
+/* ── Utility Classes ── */
+.unselectable-ui {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+.unselectable-ui *,
+.unselectable-ui ::selection {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+.unselectable-ui *::-moz-selection {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+.selectable-text {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+/* Modal Interaction Shield: Prevent selection on background layout when any modal is open */
+body.has-modal .chat-page,
+body.has-modal .sidebar,
+body.has-modal .chat-header {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  pointer-events: none; /* Optional: also block clicks if needed, though backdrop usually handles this */
+}
+
+/* Hide selection color for non-content elements in modal-active state */
+body.has-modal .chat-page ::selection {
+  background: transparent !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes typingDot {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   Light Theme Overrides
+   ============================================ */
+.light {
+  --color-bg-primary: #ffffff;
+  --color-bg-sidebar: #f9f9f9;
+  --color-bg-surface: #f3f3f3;
+  --color-bg-hover: #ececec;
+  --color-bg-active: #e5e5e5;
+  --color-bg-input: #ffffff;
+  --color-bg-modal: #ffffff;
+  --color-bg-tooltip: #2d2d2d;
+  --color-bg-code: #f4f4f4;
+  --color-bg-user-msg: #f3f3f3;
+
+  --color-text-primary: #0d0d0d;
+  --color-text-secondary: #5e5e5e;
+  --color-text-tertiary: #8e8ea0;
+  --color-text-inverse: #ffffff;
+  --color-text-link: #2b7bdb;
+
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-border-light: rgba(0, 0, 0, 0.05);
+  --color-border-focus: #2b7bdb;
+}
+
+/* ============================================
+   Mobile Responsiveness
+   ============================================ */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 280px;
+    --font-size-base: 0.9375rem; 
+  }
+  
+  .sidebar {
+    position: absolute;
+    box-shadow: var(--shadow-xl);
+  }
+  
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+  }
+
+  .chat-header {
+    padding: 0 var(--space-2);
+  }
+
+  .messages-wrapper {
+    padding: 0 var(--space-3);
+  }
+  
+  .chat-input-container {
+    padding: 0 var(--space-3) var(--space-2);
+  }
+  
+  .message-inner {
+    gap: var(--space-3);
+  }
+}
