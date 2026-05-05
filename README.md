@@ -82,7 +82,3 @@ Spectra AI is fully GDPR & CCPA compliant. We do not store your conversations on
 - [ ] Real-time internet search integration
 
 ---
-
-<div align="center">
-  Built with ❤️ by the Spectra AI Team
-</div>
