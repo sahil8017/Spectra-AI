@@ -110,3 +110,23 @@
   .settings-nav-item span, .settings-back-btn span { display:none; }
   .settings-main { padding:30px 20px; }
 }
+
+.memory-list { display:flex; flex-direction:column; gap:8px; }
+.memory-empty { padding:24px; text-align:center; color:var(--text-muted); font-size:13px; }
+.memory-delete { color:var(--text-muted); padding:6px; border-radius:6px; transition:all var(--ease-fast); }
+.memory-delete:hover { background:rgba(239,68,68,0.1); color:var(--error); }
+.memory-text { font-size:13px; color:var(--text-secondary); flex:1; }
+
+.btn-primary { padding:10px 22px; border-radius:100px; font-size:13px; font-weight:700; background:var(--brand-primary); color:#fff; transition:all var(--ease-fast); }
+.btn-primary:hover { background:var(--brand-secondary); transform:translateY(-1px); box-shadow:0 4px 12px rgba(99,102,241,0.3); }
+.btn-secondary { padding:10px 22px; border-radius:100px; font-size:13px; font-weight:600; border:1px solid var(--border-normal); color:var(--text-secondary); transition:all var(--ease-fast); }
+.btn-secondary:hover { border-color:var(--brand-primary); color:var(--brand-primary); background:rgba(99,102,241,0.06); }
+.btn-ghost { background:transparent; color:var(--text-muted); font-size:13px; padding:8px 16px; border-radius:100px; transition:all var(--ease-fast); }
+.btn-ghost:hover { color:var(--text-secondary); background:var(--bg-hover); }
+
+.settings-select {
+  background:var(--bg-surface); border:1px solid var(--border-normal);
+  border-radius:12px; padding:10px 16px; font-size:14px;
+  color:var(--text-primary); min-width:180px; outline:none; transition:all var(--ease-fast);
+}
+.settings-select:focus { border-color:var(--brand-primary); box-shadow:0 0 0 3px rgba(99,102,241,0.1); }

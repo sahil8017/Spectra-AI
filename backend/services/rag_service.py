@@ -16,7 +16,7 @@ def get_collection():
         os.makedirs(_CHROMA_DB_PATH, exist_ok=True)
         _client = chromadb.PersistentClient(path=_CHROMA_DB_PATH)
         _collection = _client.get_or_create_collection(
-            name="documents_v2",
+            name="documents_v3",
             metadata={"hnsw:space": "cosine"}
         )
     return _collection
@@ -40,24 +40,44 @@ def store_document(doc_id: str, text: str, metadata: dict) -> int:
     )
     return len(chunks)
 
-def retrieve_context(query: str, top_k: int = 5) -> List[str]:
+def retrieve_context(query: str, top_k: int = 20, filter_metadata: dict = None) -> List[str]:
     collection = get_collection()
     query_embedding = get_embedding(query)
 
-    # Make sure we don't request more results than what's in the collection
     count = collection.count()
     n_results = min(top_k, count) if count > 0 else 0
     if n_results == 0:
         return []
 
-    results = collection.query(
+    # 1. Vector Search
+    vector_results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=n_results
+        n_results=n_results,
+        where=filter_metadata
     )
+    vector_chunks = vector_results['documents'][0] if vector_results.get('documents') else []
+    
+    # 2. Keyword Search (Best-effort — can fail on older Chroma versions)
+    kw_results = []
+    try:
+        keywords = [w for w in query.lower().split() if len(w) > 3]
+        if keywords:
+            kw_query = {"$or": [{"$contains": k} for k in keywords[:5]]}
+            kw_results_raw = collection.query(
+                query_texts=[query],
+                n_results=n_results,
+                where=filter_metadata,
+                where_document=kw_query
+            )
+            if kw_results_raw.get('documents'):
+                kw_results = kw_results_raw['documents'][0]
+    except Exception:
+        pass  # Fall back to vector-only results
 
-    if not results['documents'] or not results['documents'][0]:
-        return []
-    return results['documents'][0]
+    # 3. Merge and return
+    all_chunks = list(dict.fromkeys(vector_chunks + kw_results))  # deduplicate preserving order
+    return all_chunks[:5]
+
 
 def delete_document(doc_id: str):
     collection = get_collection()

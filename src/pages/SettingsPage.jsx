@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Brain, Shield, Palette, Globe, Keyboard, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Brain, Shield, Palette, Globe, Keyboard, Trash2, PanelLeftClose } from 'lucide-react';
+
 import { useChat } from '../context/ChatContext';
+import { useAuth } from '../context/AuthContext';
 import './SettingsPage.css';
 
 const NAV = [
@@ -11,6 +13,7 @@ const NAV = [
   { id: 'appearance', icon: <Palette size={15} />, label: 'Appearance' },
   { id: 'language', icon: <Globe size={15} />, label: 'Language' },
   { id: 'shortcuts', icon: <Keyboard size={15} />, label: 'Shortcuts' },
+  { id: 'usage', icon: <Brain size={15} />, label: 'Usage' },
 ];
 
 const SHORTCUTS_LIST = [
@@ -32,7 +35,14 @@ function Toggle({ on, onToggle }) {
 
 export default function SettingsPage() {
   const navigate = useNavigate();
-  const { userProfile, setUserProfile, memoryEnabled, setMemoryEnabled, memories, deleteMemory, clearAllConversations, theme, setTheme, language, setLanguage, selectedModel, setSelectedModel, availableModels, addToast, tempChatMode, setTempChatMode } = useChat();
+  const { user, logout } = useAuth();
+  const { 
+    userProfile, setUserProfile, memoryEnabled, setMemoryEnabled, 
+    memories, deleteMemory, clearAllConversations, theme, setTheme, 
+    language, setLanguage, addToast, 
+    exportAllData, deleteAccount, usage
+  } = useChat();
+
   const [active, setActive] = useState('profile');
   const [name, setName] = useState(userProfile.name || '');
   const [instructions, setInstructions] = useState(userProfile.customInstructions || '');
@@ -55,6 +65,10 @@ export default function SettingsPage() {
             {n.icon} {n.label}
           </div>
         ))}
+        <div style={{ flexGrow: 1 }} />
+        <div className="settings-nav-item" style={{ color: '#f87171', marginTop: 'auto' }} onClick={() => { logout(); navigate('/login'); }}>
+          <PanelLeftClose size={15} /> Log Out
+        </div>
       </div>
 
       {/* Main content */}
@@ -136,14 +150,25 @@ export default function SettingsPage() {
           <>
             <div className="settings-section-title">Privacy & Data</div>
             <div className="settings-section-desc">Control how your data is stored, used, and deleted.</div>
+            
             <div className="settings-group">
-              <div className="settings-group-label">Chat mode</div>
+              <div className="settings-group-label">Data Portability (GDPR)</div>
               <div className="settings-row">
                 <div className="settings-row-info">
-                  <div className="settings-row-label">Temporary chat mode</div>
-                  <div className="settings-row-desc">Conversations won't be saved to history</div>
+                  <div className="settings-row-label">Export my data</div>
+                  <div className="settings-row-desc">Download a JSON file containing all your conversations and usage records</div>
                 </div>
-                <Toggle on={tempChatMode} onToggle={() => setTempChatMode(p => !p)} />
+                <button className="btn-secondary" onClick={async () => {
+                  try {
+                    const res = await exportAllData();
+                    const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `spectra-data-export.json`;
+                    a.click();
+                    addToast('Data export started', 'success');
+                  } catch (err) { addToast('Export failed', 'error'); }
+                }}>Export Data</button>
               </div>
             </div>
 
@@ -163,20 +188,31 @@ export default function SettingsPage() {
                   <button className="settings-danger-btn" onClick={() => setConfirmClear(true)}>Clear history</button>
                 )}
               </div>
+              
               <div className="settings-row">
                 <div className="settings-row-info">
-                  <div className="settings-row-label">Disable AI training</div>
-                  <div className="settings-row-desc">Your data will never be used to train AI models</div>
+                  <div className="settings-row-label" style={{ color: '#f87171' }}>Delete Account</div>
+                  <div className="settings-row-desc">Permanently delete your account and all associated data. This action is irreversible.</div>
                 </div>
-                <Toggle on={true} onToggle={() => addToast('Data training is already disabled by default', 'info')} />
+                <button className="settings-danger-btn" onClick={async () => {
+                  if (confirm('Are you absolutely sure you want to delete your account? This will permanently remove all your data.')) {
+                    try {
+                      await deleteAccount();
+                      logout();
+                      navigate('/login');
+                      addToast('Account deleted successfully', 'success');
+                    } catch (err) { addToast('Deletion failed', 'error'); }
+                  }
+                }}>Delete Account</button>
               </div>
             </div>
 
             <div style={{ padding: '16px', background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 'var(--radius-lg)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              🔒 All conversations are stored locally in your browser. No data is sent to external servers beyond the AI inference request. We are fully GDPR & CCPA compliant.
+              🔒 Your data is stored securely in our enterprise-grade database. We encrypt all traffic and never use your data to train external models. We are fully GDPR & CCPA compliant.
             </div>
           </>
         )}
+
 
         {/* ── APPEARANCE ── */}
         {active === 'appearance' && (
@@ -291,6 +327,35 @@ export default function SettingsPage() {
                   <span className="st-desc">{s.desc}</span>
                 </div>
               ))}
+            </div>
+          </>
+        )}
+
+        {/* ── USAGE ── */}
+        {active === 'usage' && (
+          <>
+            <div className="settings-section-title">Usage & Limits</div>
+            <div className="settings-section-desc">Monitor your token consumption and account limits.</div>
+            
+            <div className="settings-group">
+              <div className="settings-group-label">Current Usage</div>
+              {usage ? (
+                <div style={{ padding: '20px', background: 'var(--bg-elevated)', border: '1px solid var(--border-normal)', borderRadius: 'var(--radius-lg)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 600 }}>
+                    <span>Tokens used today</span>
+                    <span style={{ color: 'var(--brand-primary)' }}>{Math.round((usage.total_tokens / usage.daily_budget) * 100)}%</span>
+                  </div>
+                  <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden', marginBottom: '12px' }}>
+                    <div style={{ height: '100%', background: 'var(--gradient-brand)', width: `${Math.min(100, (usage.total_tokens / usage.daily_budget) * 100)}%` }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)' }}>
+                    <span>{usage.total_tokens.toLocaleString()} tokens</span>
+                    <span>{usage.daily_budget.toLocaleString()} limit</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="memory-empty">Usage data is currently unavailable.</div>
+              )}
             </div>
           </>
         )}

@@ -253,31 +253,77 @@
 
 /* ─── FOOTER ──────────────────────── */
 .sidebar-footer {
-  flex-shrink: 0;
-  padding: 12px;
-  border-top: 1px solid var(--border-subtle);
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 16px;
 }
-.sidebar-footer-btn {
+
+.sidebar-profile-chip {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 100px; /* Pill style */
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  cursor: pointer;
+  transition: all var(--ease-normal);
+  text-align: left;
+  width: 100%;
+}
+
+.sidebar-profile-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.profile-avatar {
+  width: 34px;
+  height: 34px;
+  background: var(--gradient-brand);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
-  transition: all var(--ease-fast);
-  width: 100%;
-  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.sidebar-footer-btn:hover {
+
+.profile-role {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.profile-settings-icon {
+  color: var(--text-muted);
+  transition: color var(--ease-fast), transform var(--ease-normal);
+}
+
+.sidebar-profile-chip:hover .profile-settings-icon {
   color: var(--brand-primary);
-  background: rgba(99, 102, 241, 0.08);
+  transform: rotate(45deg);
 }
-.sidebar-footer-btn svg { flex-shrink: 0; }
 
 /* ─── WORKSPACE TABS ────────────────── */
 .sidebar-tabs {

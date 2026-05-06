@@ -6,20 +6,27 @@ import SettingsPage from './pages/SettingsPage';
 import ToastContainer from './components/ui/ToastContainer';
 import './styles/index.css';
 
+import { AuthProvider } from './context/AuthContext';
+import LoginPage from './pages/LoginPage';
+
 function App() {
   return (
     <BrowserRouter>
-      <ChatProvider>
-        <Routes>
-          <Route path="/"                     element={<LandingPage />} />
-          <Route path="/chat"                 element={<ChatPage />} />
-          <Route path="/chat/:conversationId" element={<ChatPage />} />
-          <Route path="/settings"             element={<SettingsPage />} />
-        </Routes>
-        <ToastContainer />
-      </ChatProvider>
+      <AuthProvider>
+        <ChatProvider>
+          <Routes>
+            <Route path="/"                     element={<LandingPage />} />
+            <Route path="/login"                element={<LoginPage />} />
+            <Route path="/chat"                 element={<ChatPage />} />
+            <Route path="/chat/:conversationId" element={<ChatPage />} />
+            <Route path="/settings"             element={<SettingsPage />} />
+          </Routes>
+          <ToastContainer />
+        </ChatProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
+
 
 export default App;

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Plus, Trash2, Settings, Sun, Moon, Search, MessageSquare, PanelLeftClose, Pin, X, Clock, Pencil } from 'lucide-react';
+import { Plus, Trash2, Settings, Search, MessageSquare, Pin, X, Clock, Pencil } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
+import { useAuth } from '../../context/AuthContext';
+
 import './Sidebar.css';
 
 const SpectraLogo = () => (
@@ -29,7 +31,14 @@ function timeAgo(d) {
 }
 
 export default function Sidebar() {
-  const { conversations, deleteConversation, createNewConversation, pinConversation, sidebarOpen, setSidebarOpen, theme, toggleTheme, setCurrentConversationId, tempChatMode, setTempChatMode, exportConversation, renameConversation } = useChat();
+  const { user, logout } = useAuth();
+  const { 
+    conversations, deleteConversation, createNewConversation, 
+    pinConversation, sidebarOpen, setSidebarOpen, 
+    setCurrentConversationId, 
+    tempChatMode, setTempChatMode, exportConversation, 
+    renameConversation 
+  } = useChat();
   const navigate = useNavigate();
   const { conversationId } = useParams();
   const [search, setSearch] = useState('');
@@ -158,14 +167,25 @@ export default function Sidebar() {
 
         {/* Footer */}
         <div className="sidebar-footer">
-          <button className="sidebar-footer-btn" onClick={() => { navigate('/settings'); if (window.innerWidth <= 768) setSidebarOpen(false); }}>
-            <Settings size={16} /> Settings
-          </button>
+          {user && (
+            <button 
+              className="sidebar-profile-chip" 
+              onClick={() => { navigate('/settings'); if (window.innerWidth <= 768) setSidebarOpen(false); }}
+            >
+              <div className="profile-avatar">{user.name?.[0]?.toUpperCase() || user.email[0]?.toUpperCase()}</div>
+              <div className="profile-info">
+                <div className="profile-name">{user.name || 'User'}</div>
+                <div className="profile-role">Manage account</div>
+              </div>
+              <Settings size={14} className="profile-settings-icon" />
+            </button>
+          )}
         </div>
       </aside>
     </>
   );
 }
+
 
 function ConvItem({ conv, active, onSelect, onDelete, onPin, onRename, onExport }) {
   const [isEditing, setIsEditing] = useState(false);

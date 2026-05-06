@@ -4,7 +4,7 @@ from typing import List, Optional, Literal
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=5000)
     conversation_id: Optional[str] = None
-    history: Optional[List[dict]] = []
+    model_id: Optional[str] = "spectra-flash"
 
 class DocumentUploadRequest(BaseModel):
     doc_id: str
@@ -36,3 +36,9 @@ class YouTubeResponse(BaseModel):
     transcript_length: int
     summary: str
     key_points: List[str]
+
+class ErrorResponse(BaseModel):
+    error: str
+    code: str
+    correlation_id: Optional[str] = None
+    details: Optional[dict] = None

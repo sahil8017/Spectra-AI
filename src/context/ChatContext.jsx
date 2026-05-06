@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { chatApi, documentApi, youtubeApi } from '../services/api';
+import { chatApi, documentApi, youtubeApi, gdprApi } from '../services/api';
+
+import { useAuth } from './AuthContext';
 
 const ChatContext = createContext();
 
@@ -10,14 +12,14 @@ export const AVAILABLE_MODELS = [
   { id: 'spectra-rag', name: 'Spectra RAG', description: 'Document & PDF intelligence mode', badge: 'Docs', icon: '📄' },
 ];
 
-const QUICK_SUGGESTIONS = [
+export const QUICK_SUGGESTIONS = [
   { id: '1', label: 'Write a professional email' },
   { id: '2', label: 'Explain quantum computing simply' },
   { id: '3', label: 'Plan a 3-day trip to Tokyo' },
   { id: '4', label: 'Fix a JavaScript bug' },
 ];
 
-const PROMPT_TEMPLATES = [
+export const PROMPT_TEMPLATES = [
   { id: 'email', icon: '📧', label: 'Email draft', template: 'Write a professional email to [recipient] about [topic]. Tone: [formal/casual]. Key points: ' },
   { id: 'blog', icon: '📝', label: 'Blog post', template: 'Write a blog post titled "[title]". Target audience: [audience]. Word count: ~[N] words. Outline: ' },
   { id: 'code', icon: '💻', label: 'Code task', template: 'Write a [language] function that [description]. Requirements:\n- \n- \nReturn: ' },
@@ -32,11 +34,50 @@ const load = (key, fallback) => {
 };
 
 export const ChatProvider = ({ children }) => {
+
+  const { user, token, isAuthenticated } = useAuth();
+  
   /* ── Conversations ──────────────────────────────── */
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, _setCurrentConvId] = useState(null);
 
+  /* ── Usage & Quota ──────────────────────────────── */
+  const [usage, setUsage] = useState(null);
+
+  /* ── Fetch Initial Data from Backend ──────────────── */
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchHistory();
+      fetchUsage();
+    } else {
+      setConversations([]);
+      _setCurrentConvId(null);
+    }
+  }, [isAuthenticated]);
+
+  const fetchHistory = async () => {
+    try {
+      const res = await chatApi.getHistory();
+      setConversations(res.data.map(c => ({
+        ...c,
+        messages: [] // Load messages on demand
+      })));
+    } catch (err) {
+      console.error('Failed to fetch history', err);
+    }
+  };
+
+  const fetchUsage = async () => {
+    try {
+      const res = await chatApi.getUsage();
+      setUsage(res.data);
+    } catch (err) {
+      console.error('Failed to fetch usage', err);
+    }
+  };
+
   /* ── UI ─────────────────────────────────────────── */
+
   const [theme, setThemeState] = useState(() => load('spectra_theme', 'dark'));
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [language, setLanguage] = useState(() => load('spectra_lang', 'en'));
@@ -121,15 +162,36 @@ export const ChatProvider = ({ children }) => {
 
   const createNewConversation = useCallback(() => createConversation('general'), [createConversation]);
 
-  const setCurrentConversationId = useCallback((id) => {
+  const setCurrentConversationId = useCallback(async (id) => {
     _setCurrentConvId(id);
     setCurrentDocId(null);
-  }, []);
+    
+    if (id && id !== '__temp__') {
+      const conv = conversations.find(c => c.id === id);
+      if (conv && (!conv.messages || conv.messages.length === 0)) {
+        try {
+          const res = await chatApi.getMessages(id);
+          setConversations(prev => prev.map(c => 
+            c.id === id ? { ...c, messages: res.data } : c
+          ));
+        } catch (err) {
+          console.error('Failed to fetch messages', err);
+        }
+      }
+    }
+  }, [conversations]);
 
-  const deleteConversation = useCallback((id) => {
-    setConversations(prev => prev.filter(c => c.id !== id));
-    if (currentConversationId === id) _setCurrentConvId(null);
-  }, [currentConversationId]);
+  const deleteConversation = useCallback(async (id) => {
+    try {
+      await chatApi.deleteConversation(id);
+      setConversations(prev => prev.filter(c => c.id !== id));
+      if (currentConversationId === id) _setCurrentConvId(null);
+      addToast('Conversation deleted', 'success');
+    } catch (err) {
+      addToast('Failed to delete conversation', 'error');
+    }
+  }, [currentConversationId, addToast]);
+
 
   const clearAllConversations = useCallback(() => {
     setConversations([]); _setCurrentConvId(null);
@@ -221,6 +283,9 @@ export const ChatProvider = ({ children }) => {
 
 
 
+  /* ── YouTube URL detector ───────────────────────── */
+  const YOUTUBE_REGEX = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?.*v=|v\/|embed\/|shorts\/)|youtu\.be\/)[\w-]+/i;
+
   /* ── Stop generation ────────────────────────────── */
   const stopGeneration = useCallback(() => {
     if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
@@ -230,38 +295,83 @@ export const ChatProvider = ({ children }) => {
   /* ── Send message ───────────────────────────────── */
   const sendMessage = useCallback(async (text, convId) => {
     if (!isOnline) { addToast('You are offline. Check your connection.', 'error'); return; }
+    if (!isAuthenticated) { addToast('Please login to continue', 'error'); return; }
 
     let activeId = convId;
-    if (!activeId || (activeId !== '__temp__' && !conversations.find(c => c.id === activeId))) {
-      activeId = createConversation('general');
-    }
+    const isNew = !activeId || activeId === '__temp__';
 
-    const msgs = activeId === '__temp__' ? tempMessages : (conversations.find(c => c.id === activeId)?.messages || []);
-    const history = msgs.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role: m.role, content: m.content }));
-
-    addMessage(activeId, 'user', text);
-    addMessage(activeId, 'assistant', '');
-    setIsLoading(true); setStreamingId(activeId);
-
+    // Optimistic UI update
+    const userMsgId = addMessage(activeId || 'new', 'user', text);
+    const aiMsgId = addMessage(activeId || 'new', 'assistant', '');
+    
+    setIsLoading(true); setStreamingId(activeId || 'new');
     const controller = new AbortController();
     abortRef.current = controller;
 
     try {
-      const isYT = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/.test(text.trim());
-      if (isYT) {
-        await youtubeApi.summarizeStream(text.trim(), 'medium', c => updateLastMessage(activeId, c), () => { });
-      } else if (currentDocId) {
-        await documentApi.queryDocumentStream(currentDocId, text, 5, history, c => updateLastMessage(activeId, c), () => { });
-      } else {
-        await chatApi.sendMessageStream(text, activeId, history, c => updateLastMessage(activeId, c));
+      // ── YouTube URL detected: use real summarizer ──
+      const ytMatch = text.match(YOUTUBE_REGEX);
+      if (ytMatch) {
+        const ytUrl = ytMatch[0].startsWith('http') ? ytMatch[0] : `https://${ytMatch[0]}`;
+        await youtubeApi.summarizeStream(
+          ytUrl,
+          'medium',
+          (chunk) => updateLastMessage(activeId || 'new', chunk),
+          (meta) => {
+            if (meta.conversation_id && isNew) {
+              activeId = meta.conversation_id;
+              _setCurrentConvId(activeId);
+            }
+          }
+        );
+        fetchUsage();
+        return activeId;
       }
+
+      const msgs = activeId === '__temp__' ? tempMessages : (conversations.find(c => c.id === activeId)?.messages || []);
+      const history = msgs.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role: m.role, content: m.content }));
+
+      const onMetadata = (meta) => {
+        if (meta.conversation_id && isNew) {
+          activeId = meta.conversation_id;
+          _setCurrentConvId(activeId);
+          // If it was a totally new chat, add it to the sidebar list
+          setConversations(prev => {
+            const exists = prev.find(c => c.id === activeId);
+            if (exists) return prev;
+            return [{
+              id: activeId,
+              title: text.substring(0, 30) + '...',
+              messages: [],
+              createdAt: new Date().toISOString()
+            }, ...prev];
+          });
+        }
+      };
+
+      await chatApi.sendMessageStream(
+        text, 
+        activeId === 'new' ? null : activeId, 
+        history, 
+        (chunk) => updateLastMessage(activeId, chunk),
+        onMetadata
+      );
+
+      // Refresh usage after successful chat
+      fetchUsage();
+      
     } catch (err) {
-      if (err.name !== 'AbortError') setLastMessageError(activeId, err.message || 'An error occurred');
+      if (err.name !== 'AbortError') {
+        setLastMessageError(activeId, err.message || 'An error occurred');
+        addToast(err.message, 'error');
+      }
     } finally {
       setIsLoading(false); setStreamingId(null); abortRef.current = null;
     }
     return activeId;
-  }, [isOnline, conversations, tempMessages, currentDocId, addMessage, updateLastMessage, setLastMessageError, createConversation, addToast]);
+  }, [isOnline, isAuthenticated, conversations, tempMessages, addMessage, updateLastMessage, setLastMessageError, addToast]);
+
+
 
   /* ── Upload document ────────────────────────────── */
   const uploadDocument = useCallback(async (file, optionalMessage, convId) => {
@@ -270,20 +380,50 @@ export const ChatProvider = ({ children }) => {
     addMessage(activeId, 'user', `📄 Uploaded: **${file.name}**${optionalMessage ? `\n\n${optionalMessage}` : ''}`);
     setIsLoading(true);
     addToast(`Uploading ${file.name}…`, 'info', 60000);
+    
     try {
       const res = await documentApi.uploadPdf(file);
-      setCurrentDocId(res.doc_id);
-      addToast(`${file.name} processed (${res.chunks_stored} sections)`, 'success');
-      if (optionalMessage) {
-        addMessage(activeId, 'assistant', '');
-        await documentApi.queryDocumentStream(res.doc_id, optionalMessage, 5, [], c => updateLastMessage(activeId, c), () => { });
-      } else {
-        addMessage(activeId, 'assistant', `✅ **${file.name}** processed (${res.chunks_stored} sections).\n\nAsk me anything about this document!`);
+      const docId = res.doc_id;
+      setCurrentDocId(docId);
+      
+      // Poll for indexing status
+      let isIndexed = false;
+      let attempts = 0;
+      const maxAttempts = 30; // 30 seconds max
+      
+      addToast(`Processing ${file.name}…`, 'info', 30000);
+      
+      while (!isIndexed && attempts < maxAttempts) {
+        await new Promise(r => setTimeout(r, 1000));
+        const statusRes = await documentApi.getDocumentStatus(docId);
+        if (statusRes.data.status === 'indexed') {
+          isIndexed = true;
+          addToast(`${file.name} indexed (${statusRes.data.chunks} sections)`, 'success');
+          
+          if (optionalMessage) {
+            addMessage(activeId, 'assistant', '');
+            await documentApi.queryDocumentStream(docId, optionalMessage, 5, [], c => updateLastMessage(activeId, c), () => { });
+          } else {
+            addMessage(activeId, 'assistant', `✅ **${file.name}** processed (${statusRes.data.chunks} sections).\n\nAsk me anything about this document!`);
+          }
+        } else if (statusRes.data.status === 'failed') {
+          throw new Error('Document indexing failed');
+        }
+        attempts++;
       }
+      
+      if (!isIndexed) {
+        throw new Error('Indexing timed out. Please try again later.');
+      }
+      
     } catch (err) {
-      addMessage(activeId, 'assistant', `❌ Upload failed: ${err.response?.data?.detail || err.message}`);
-      addToast('Upload failed', 'error');
-    } finally { setIsLoading(false); }
+      console.error('Document error:', err);
+      const msg = err.response?.data?.detail || err.message;
+      addMessage(activeId, 'assistant', `❌ Error: ${msg}`);
+      addToast(`Failed to process ${file.name}`, 'error');
+    } finally {
+      setIsLoading(false);
+    }
     return activeId;
   }, [addMessage, updateLastMessage, createConversation, addToast]);
 
@@ -346,11 +486,14 @@ export const ChatProvider = ({ children }) => {
       tempChatMode, setTempChatMode,
       toasts, addToast, removeToast,
       isOnline,
-      renameConversation,
+      usage, fetchUsage,
+      exportAllData: gdprApi.exportMyData,
+      deleteAccount: gdprApi.deleteMyData,
       quickSuggestions: QUICK_SUGGESTIONS,
       promptTemplates: PROMPT_TEMPLATES,
       exportConversation,
     }}>
+
       {children}
     </ChatContext.Provider>
   );

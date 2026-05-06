@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useChat } from '../context/ChatContext';
+import { useAuth } from '../context/AuthContext';
 import './LandingPage.css';
+
 
 const SpectraLogo = ({ size = 34 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -75,12 +77,19 @@ const TESTIMONIALS = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { createNewConversation, theme, toggleTheme } = useChat();
+  const { theme, toggleTheme } = useChat();
+  const { isAuthenticated } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('features');
   const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navLinksRef = useRef([]);
+
+  const handleStart = () => {
+    navigate(isAuthenticated ? '/chat' : '/login');
+  };
+
+  const ctaLabel = isAuthenticated ? 'Go to Chat' : 'Try for free';
 
   useEffect(() => {
     // Enable scrolling on the body for the landing page
@@ -171,9 +180,6 @@ export default function LandingPage() {
     }
   };
 
-  const handleStart = () => {
-    navigate('/chat');
-  };
 
   return (
     <div className="landing" data-theme={theme}>
@@ -214,7 +220,7 @@ export default function LandingPage() {
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-moon moon-icon"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"></path></svg>
           </button>
           <button className="nav-cta desktop-only" onClick={handleStart}>
-            Try for free →
+            {ctaLabel} →
           </button>
           <button
             id="mobileMenuBtn"
@@ -254,7 +260,7 @@ export default function LandingPage() {
           </a>
           <div className="mobile-menu-footer">
             <button className="nav-cta" style={{ width: '100%', marginTop: '8px' }} onClick={handleStart}>
-              Try for free →
+              {ctaLabel} →
             </button>
           </div>
         </div>
@@ -288,7 +294,7 @@ export default function LandingPage() {
 
           <div className="hero-actions">
             <button className="hero-cta" onClick={handleStart}>
-              Start for free <SpectraLogo size={16} />
+              {ctaLabel} <SpectraLogo size={16} />
             </button>
             <a href="#features" className="hero-secondary">
               See what it can do
@@ -460,10 +466,10 @@ export default function LandingPage() {
           Ready to think<br />
           <span className="gradient-text">at light speed?</span>
         </h2>
-        <p className="bottom-cta-sub">Start your first conversation in seconds. No account needed.</p>
+        <p className="bottom-cta-sub">Start your first conversation in seconds. Free account included.</p>
         <div className="bottom-cta-actions">
           <button className="hero-cta" onClick={handleStart}>
-            Open Spectra AI <SpectraLogo size={16} />
+            {ctaLabel} <SpectraLogo size={16} />
           </button>
         </div>
       </section>

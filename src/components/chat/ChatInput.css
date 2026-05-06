@@ -130,6 +130,9 @@
 .chat-send-btn.active { background: var(--brand-primary); color: #fff; box-shadow: 0 4px 12px rgba(99,102,241,0.4); }
 .chat-send-btn.active:hover { background: var(--brand-secondary); transform: scale(1.05); }
 
+.chat-send-btn.stop-btn.active { background: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
+.chat-send-btn.stop-btn.active:hover { background: #dc2626; }
+
 /* Footer hints */
 .chat-footer-hints {
   display: flex; align-items: center; justify-content: space-between;

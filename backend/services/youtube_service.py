@@ -21,23 +21,39 @@ def extract_video_id(url: str) -> str:
     
     raise ValueError(f"Invalid YouTube URL: {url}")
 
-def get_transcript(url: str, language: str = "en") -> str:
+def get_transcript(url: str, language_prefs: list = None) -> str:
+    if language_prefs is None:
+        language_prefs = ['en', 'en-US', 'en-GB']
+        
     video_id = extract_video_id(url)
     try:
-        # New youtube-transcript-api v2.x API: use instance method .fetch()
         api = YouTubeTranscriptApi()
-        transcript_list = api.fetch(video_id, languages=[language])
-        text = " ".join([snippet.text for snippet in transcript_list])
-        return text
-    except Exception as e:
-        # Fallback: try without language preference
+        transcript_list = api.list(video_id)
+        
         try:
-            api = YouTubeTranscriptApi()
-            transcript_list = api.fetch(video_id)
-            text = " ".join([snippet.text for snippet in transcript_list])
-            return text
-        except Exception as e2:
-            raise ValueError(f"Could not retrieve transcript for video '{video_id}': {str(e2)}")
+            # 1. Try preferred languages (includes auto-generated if they match code)
+            transcript = transcript_list.find_transcript(language_prefs)
+        except Exception:
+            # 2. If preferred fails, just pick the first one available in the list
+            # transcript_list is an iterable of Transcript objects
+            try:
+                transcript = next(iter(transcript_list))
+            except StopIteration:
+                raise ValueError(f"No transcripts available for video '{video_id}'")
+
+        data = transcript.fetch()
+        
+        # Handle different versions of youtube-transcript-api (dict vs object)
+        text_parts = []
+        for snippet in data:
+            if isinstance(snippet, dict):
+                text_parts.append(snippet.get('text', ''))
+            else:
+                text_parts.append(getattr(snippet, 'text', str(snippet)))
+                
+        return " ".join(text_parts)
+    except Exception as e:
+        raise ValueError(f"Could not retrieve transcript for video '{video_id}': {str(e)}")
 
 def generate_summary(transcript: str) -> str:
     pass  # Handled in the router via llm_service

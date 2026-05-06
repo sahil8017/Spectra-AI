@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   PanelLeftOpen, PanelLeftClose, ChevronDown,
-  SquarePen, Share2, Square, X
+  SquarePen, Share2, X
 } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import './ChatHeader.css';
@@ -18,7 +18,6 @@ export default function ChatHeader({ onClearDoc, hasDoc }) {
     sidebarOpen, toggleSidebar,
     createNewConversation,
     selectedModel, setSelectedModel, availableModels,
-    isLoading, stopGeneration,
     currentConversation,
   } = useChat();
   const navigate       = useNavigate();
@@ -76,16 +75,6 @@ export default function ChatHeader({ onClearDoc, hasDoc }) {
 
       {/* RIGHT */}
       <div className="chat-header-right">
-        {isLoading && (
-          <button
-            className="header-icon-btn"
-            onClick={stopGeneration}
-            title="Stop generating"
-            style={{ color: 'var(--error)' }}
-          >
-            <Square size={16} fill="currentColor" />
-          </button>
-        )}
         {currentConversation && (
           <button
             className="header-icon-btn"

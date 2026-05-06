@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Paperclip, FileText, X, Loader2, Mic, ChevronUp, AlignLeft, Zap, BookOpen } from 'lucide-react';
+import { Send, Paperclip, FileText, X, Loader2, Mic, ChevronUp, AlignLeft, Zap, BookOpen, Square } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import './ChatInput.css';
 
@@ -14,7 +14,7 @@ const PLACEHOLDERS = [
 const LENGTH_ICONS = { concise: <Zap size={13}/>, balanced: <AlignLeft size={13}/>, detailed: <BookOpen size={13}/> };
 
 export default function ChatInput({ onSendMessage, onFileUpload, isLoading, hasDoc }) {
-  const { responseLengths, responseLength, setResponseLength, promptTemplates, addToast } = useChat();
+  const { responseLengths, responseLength, setResponseLength, promptTemplates, addToast, stopGeneration } = useChat();
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
   const [showLength, setShowLength] = useState(false);
@@ -183,13 +183,23 @@ export default function ChatInput({ onSendMessage, onFileUpload, isLoading, hasD
 
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               {charCount > 0 && <span className="char-counter" style={{opacity: charCount > 3000 ? 1 : 0.5}}>{charCount}</span>}
-              <button
-                className={`chat-send-btn ${(text.trim() || file) && !isLoading ? 'active' : ''}`}
-                onClick={handleSubmit}
-                disabled={(!text.trim() && !file) || isLoading}
-              >
-                {isLoading ? <Loader2 size={16} className="spinner"/> : <Send size={16}/>}
-              </button>
+              {isLoading ? (
+                <button
+                  className="chat-send-btn stop-btn active"
+                  onClick={stopGeneration}
+                  title="Stop generating"
+                >
+                  <Square size={14} fill="currentColor" />
+                </button>
+              ) : (
+                <button
+                  className={`chat-send-btn ${(text.trim() || file) && !isLoading ? 'active' : ''}`}
+                  onClick={handleSubmit}
+                  disabled={(!text.trim() && !file) || isLoading}
+                >
+                  <Send size={16}/>
+                </button>
+              )}
             </div>
           </div>
         </div>
